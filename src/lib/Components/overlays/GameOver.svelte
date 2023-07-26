@@ -3,7 +3,7 @@
 	export let restart = () => {};
 	let prettyDate = '';
 	$: {
-		if ($gameStore && $gameStore.endTime) {
+		if ($gameStore && $gameStore.endTime && $gameStore.startTime) {
 			prettyDate = new Date($gameStore.endTime - $gameStore.startTime)
 				.toISOString()
 				.substring(11, 19);

@@ -33,12 +33,10 @@
 			gameId: Math.random().toString(36).substring(7),
 			isGameOver: false,
 			isPlaying: true,
-			startTime: Date.now(),
+			startTime: null,
 			isGameWon: false,
-			endTime: undefined,
 			clicks: 0
 		};
-		if ($progress === 1) updateTime();
 	}
 
 	function createCube() {
@@ -131,7 +129,11 @@
 		if ($isMoving) return;
 		const block = cube[pos.x][pos.y][pos.z];
 		if (block.type === 'air') return;
-
+        if(!$gameStore.isPlaying || $gameStore.isGameOver) return;
+        if($gameStore.startTime === null){ 
+            $gameStore.startTime = Date.now();
+            updateTime();
+        }
 		if (clickType === 'left' && currentTool === 'shovel') {
 			//Left click
 			if (block.type === 'bomb') {
@@ -337,11 +339,6 @@
 	};
 
 	DefaultLoadingManager.onLoad = function () {
-		$gameStore = {
-			...$gameStore,
-			startTime: Date.now()
-		};
-		updateTime();
 		console.log('Loading Complete!');
 	};
 
@@ -357,7 +354,6 @@
 		setTimeout(() => {
 			if ($progress === 0) {
 				$progress = 1;
-				updateTime();
 			}
 		}, 1000);
 	}
@@ -369,6 +365,7 @@
 	let timeout: string | number | NodeJS.Timeout | undefined;
 	async function updateTime() {
 		if (timeout) clearTimeout(timeout);
+        if($gameStore.startTime === null) return;
 		if ($gameStore.isPlaying) timeout = setTimeout(updateTime, 1000);
 		timePlayed = Date.now() - $gameStore.startTime;
 	}

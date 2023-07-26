@@ -3,7 +3,7 @@ import { writable } from "svelte/store";
 type gameStoreType = {
     gameId: string;
     isPlaying: boolean;
-    startTime: number;
+    startTime: number | null;
     isGameOver: boolean;
     isGameWon: boolean;
     endTime?: number;

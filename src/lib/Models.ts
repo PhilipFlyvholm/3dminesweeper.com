@@ -17,8 +17,8 @@ const modelPaths: {
 }[] = [
 	{
 		name: 'flag',
-		objPath: 'models/flag.obj',
-		mtlPath: 'models/flag.mtl',
+		objPath: '/models/flag.obj',
+		mtlPath: '/models/flag.mtl',
 		options: {
 			scale: {
 				x: 0.003,

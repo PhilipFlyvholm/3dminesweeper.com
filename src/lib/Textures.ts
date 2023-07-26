@@ -8,59 +8,59 @@ const texturePaths: {
 }[] = [
 	{
 		name: 'block_open_air',
-		path: 'blocks/value=Default.png'
+		path: '/blocks/value=Default.png'
 	},
 	{
 		name: 'block_open_1',
-		path: 'blocks/value=1.png'
+		path: '/blocks/value=1.png'
 	},
 	{
 		name: 'block_open_2',
-		path: 'blocks/value=2.png'
+		path: '/blocks/value=2.png'
 	},
 	{
 		name: 'block_open_3',
-		path: 'blocks/value=3.png'
+		path: '/blocks/value=3.png'
 	},
 	{
 		name: 'block_open_4',
-		path: 'blocks/value=4.png'
+		path: '/blocks/value=4.png'
 	},
 	{
 		name: 'block_open_5',
-		path: 'blocks/value=5.png'
+		path: '/blocks/value=5.png'
 	},
 	{
 		name: 'block_open_6',
-		path: 'blocks/value=6.png'
+		path: '/blocks/value=6.png'
 	},
 	{
 		name: 'block_open_7',
-		path: 'blocks/value=7.png'
+		path: '/blocks/value=7.png'
 	},
 	{
 		name: 'block_open_8',
-		path: 'blocks/value=8.png'
+		path: '/blocks/value=8.png'
 	},
 	{
 		name: 'block_default',
-		path: 'blocks/type=Default.png'
+		path: '/blocks/type=Default.png'
 	},
 	{
 		name: 'block_bomb',
-		path: 'blocks/type=bomb.png'
+		path: '/blocks/type=bomb.png'
 	},
 	{
 		name: 'block_bomb_exploded',
-		path: 'blocks/type=bomb_explosion.png'
+		path: '/blocks/type=bomb_explosion.png'
 	},
 	{
 		name: 'block_flag',
-		path: 'blocks/type=flag.png'
+		path: '/blocks/type=flag.png'
 	},
 	{
 		name: 'block_flag_wrong',
-		path: 'blocks/type=flag_wrong.png'
+		path: '/blocks/type=flag_wrong.png'
 	}
 ];
 
