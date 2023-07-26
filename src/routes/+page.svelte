@@ -9,9 +9,6 @@
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import { onMount } from 'svelte';
-	import { useLoader } from '@threlte/core';
-	import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
-	import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 	let isMoving = writable(false);
 	let currentTool: 'shovel' | 'flag' = 'shovel';
 

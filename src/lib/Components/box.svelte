@@ -39,25 +39,43 @@
 
 	let obj = writable<Group | null>(null);
 	onMount(() => {
-		mtlLoader.load('http://3dminesweeper.local/models/flag.mtl', (materials) => {
-			materials.preload();
-			objLoader.setMaterials(materials);
-			objLoader.load('http://3dminesweeper.local/models/flag.obj', (group) => {
-				group.scale.set(0.003, 0.003, 0.003);
-				const g = new Group();
-				g.copy(group);
-				obj.set(g);
-				console.log('loaded', group);
-			});
-		});
+		mtlLoader.load(
+			'models/flag.mtl',
+			(materials) => {
+				materials.preload();
+				objLoader.setMaterials(materials);
+				objLoader.load(
+					'models/flag.obj',
+					(group) => {
+						group.scale.set(0.003, 0.003, 0.003);
+						const g = new Group();
+						g.copy(group);
+						obj.set(g);
+						console.log('loaded', group);
+					},
+					(xhr) => {
+						//console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+					},
+					(error) => {
+						console.log('An error happened while loading object', error);
+					}
+				);
+			},
+			(xhr) => {
+				//console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+			},
+			(error) => {
+				console.log('An error happened while loading material', error);
+			}
+		);
 	});
 	function isTouchDevice() {
 		return (
-            // @ts-ignore msMaxTouchPoints is not in the lib
+			// @ts-ignore msMaxTouchPoints is not in the lib
 			'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
 		);
 	}
-    const isTouch = isTouchDevice();
+	const isTouch = isTouchDevice();
 </script>
 
 <T.Mesh scale={$scale} position={[position.x, position.y, position.z]} let:ref bind:ref={mesh}>
