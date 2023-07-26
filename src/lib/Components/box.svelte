@@ -1,15 +1,14 @@
 <script lang="ts">
+	import { getModel } from '$lib/Models';
+	import gameStore from '$lib/Stores/GameStore';
 	import { getTexture } from '$lib/Textures';
+	import { isTouchDevice } from '$lib/Utils/DeviceUtil';
 	import { InteractiveObject, Object3DInstance, T, useLoader } from '@threlte/core';
 	import { onMount } from 'svelte';
 	import { spring } from 'svelte/motion';
 	import { writable, type Writable } from 'svelte/store';
-	import { Group, type Mesh } from 'three';
-	import gameStore from '$lib/Stores/GameStore';
-	import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
-	import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
-	export let position = { x: 0, y: 0, z: 0 };
-	export let texture = 'block_default';
+	import type { Group, Mesh } from 'three';
+
 	export let clickCallback: (
 		pos: { x: number; y: number; z: number },
 		clickType: 'left' | 'right',
@@ -19,63 +18,30 @@
 		position: { x: number; y: number; z: number },
 		ref: Mesh
 	) => void = () => {};
+
+	export let position = { x: 0, y: 0, z: 0 };
+	export let texture = 'block_default';
 	export let isMoving: Writable<boolean>;
 	export let isFlagged: boolean;
 	export let facing: 'up' | 'down' | 'left' | 'right' | 'front' | 'back';
+
+	const scale = spring(1);
+	const randomFlagRotation = Math.random() * Math.PI * 2;
+	const isTouch = isTouchDevice();
 	let mesh: Mesh;
+	let obj = writable<Group | null>(null);
 
 	onMount(() => {
 		updateRef(position, mesh);
 	});
-	const scale = spring(1);
-	$: blockTexture = getTexture(texture);
+	onMount(async () => {
+		$obj = await getModel('flag');
+	});
 
+	$: blockTexture = getTexture(texture);
 	isMoving.subscribe(() => {
 		if ($isMoving && $scale !== 1) $scale = 1;
 	});
-	const mtlLoader = useLoader(MTLLoader, () => new MTLLoader());
-	const objLoader = useLoader(OBJLoader, () => new OBJLoader());
-	const randomFlagRotation = Math.random() * Math.PI * 2;
-
-	let obj = writable<Group | null>(null);
-	onMount(() => {
-		mtlLoader.load(
-			'models/flag.mtl',
-			(materials) => {
-				materials.preload();
-				objLoader.setMaterials(materials);
-				objLoader.load(
-					'models/flag.obj',
-					(group) => {
-						group.scale.set(0.003, 0.003, 0.003);
-						const g = new Group();
-						g.copy(group);
-						obj.set(g);
-						console.log('loaded', group);
-					},
-					(xhr) => {
-						//console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-					},
-					(error) => {
-						console.log('An error happened while loading object', error);
-					}
-				);
-			},
-			(xhr) => {
-				//console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-			},
-			(error) => {
-				console.log('An error happened while loading material', error);
-			}
-		);
-	});
-	function isTouchDevice() {
-		return (
-			// @ts-ignore msMaxTouchPoints is not in the lib
-			'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
-		);
-	}
-	const isTouch = isTouchDevice();
 </script>
 
 <T.Mesh scale={$scale} position={[position.x, position.y, position.z]} let:ref bind:ref={mesh}>
