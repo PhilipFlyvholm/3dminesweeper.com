@@ -1,20 +1,23 @@
 <script lang="ts">
-	import { Canvas, OrbitControls, T, useThrelte } from '@threlte/core';
+	import { Canvas, Object3DInstance, OrbitControls, T } from '@threlte/core';
 	import Box from '$lib/Components/box.svelte';
 	import { writable } from 'svelte/store';
 	import gameStore from '$lib/Stores/GameStore';
-	import { MeshBasicMaterial, type Mesh } from 'three';
+	import { MeshBasicMaterial, type Mesh, Group } from 'three';
 	//	import type {  Mesh } from 'three';
 	import { getTexture } from '$lib/Textures';
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import { onMount } from 'svelte';
+	import { useLoader } from '@threlte/core';
+	import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+	import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 	let isMoving = writable(false);
 	let currentTool: 'shovel' | 'flag' = 'shovel';
 
-	const width = 3;
-	const height = 3;
-	const depth = 3;
+	const width = 5;
+	const height = 5;
+	const depth = 5;
 	type block =
 		| {
 				x: number;
@@ -50,13 +53,16 @@
 			endTime: undefined,
 			clicks: 0
 		};
+		updateTime();
 	}
 
 	function createCube() {
 		const totalAmount =
 			width * height * depth -
 			Math.max(width - 2, 0) * Math.max(height - 2, 0) * Math.max(depth - 2, 0);
+
 		const totalBombs = Math.max(Math.floor(totalAmount / 10), 1);
+		console.log(totalBombs, totalAmount);
 		let bombsRemaining = totalBombs;
 		const cube: block[][][] = [];
 		for (let x = 0; x < width; x++) {
@@ -138,12 +144,14 @@
 				return;
 			}
 			if (block.isFlagged) return;
-			if(block.isSweeped) return;
+			if (block.isSweeped) return;
 			$gameStore.clicks++;
 			block.isSweeped = true;
 			cascadeEmptyBlocks();
+			checkWin();
 		} else {
 			//Right click
+			if (block.isSweeped) return;
 			if (block.isFlagged) {
 				block.isFlagged = false;
 				estimatedBombsRemaining++;
@@ -155,6 +163,8 @@
 		}
 		cube[pos.x][pos.y][pos.z] = block;
 		updateTexture(pos.x, pos.y, pos.z, ref);
+
+		checkWin();
 	}
 
 	function cascadeEmptyBlocks() {
@@ -228,7 +238,7 @@
 		const block = cube[x][y][z];
 
 		if (block.type === 'air') return;
-		if (block.isFlagged) return 'block_flag';
+		if (block.isFlagged)return "block_default" // return 'block_flag';
 		if (block.isSweeped) {
 			if (block.type === 'bomb') return 'block_bomb_exploded';
 			const bombsAround = getBombsAround(x, y, z);
@@ -247,13 +257,38 @@
 		cubeRefs[position.x][position.y][position.z] = ref;
 	}
 
-	function countBombs() {
+	function isComplete() {
+		for (let x = 0; x < width; x++) {
+			for (let y = 0; y < height; y++) {
+				for (let z = 0; z < depth; z++) {
+					const block = cube[x][y][z];
+					if (block.type === 'bomb' && !block.isFlagged) return false;
+					if (block.type === 'block' && !block.isSweeped) return false;
+				}
+			}
+		}
+		return true;
+	}
+	function checkWin() {
+		if (isComplete()) {
+			$gameStore = {
+				...$gameStore,
+				isGameOver: true,
+				isPlaying: false,
+				isGameWon: true,
+				endTime: Date.now(),
+				bombs: countBombs(true)
+			};
+		}
+	}
+
+	function countBombs(ignoreFlagged = false) {
 		let bombs = 0;
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
 					const block = cube[x][y][z];
-					if (block.type === 'bomb') bombs++;
+					if (block.type === 'bomb' && (!ignoreFlagged || !block.isFlagged)) bombs++;
 				}
 			}
 		}
@@ -267,27 +302,36 @@
 			isPlaying: false,
 			isGameWon: false,
 			endTime: Date.now(),
-			bombs: countBombs()
+			bombs: countBombs(true)
 		};
 	}
 
 	onMount(() => {
 		init();
 	});
+	let isPlaying = false;
+	$: isPlaying = $gameStore ? $gameStore.isPlaying : false;
+
+	let timePlayed = 0;
+	async function updateTime() {
+		timePlayed = Date.now() - $gameStore.startTime;
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		if ($gameStore.isPlaying) updateTime();
+	}
 </script>
 
 <div class="canvasContainer w-screen h-screen">
 	{#if $gameStore}
 		{#key $gameStore.gameId}
 			<Canvas>
-				<T.PerspectiveCamera makeDefault position={[width + 10, height + 10, depth + 10]} fov={24}>
+				<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
 					<OrbitControls
 						enablePan={false}
-						enableZoom={$gameStore.isPlaying || true}
-						enableRotate={$gameStore.isPlaying || true}
-						
-						autoRotate={!$gameStore.isPlaying}
-						maxZoom={1}
+						enableZoom={true}
+						enableRotate={true}
+						autoRotate={!isPlaying}
+						minDistance={Math.max(width, height, depth) * 2 + 5}
+						maxDistance={Math.max(width, height, depth) * 2 + 100}
 						target={{ x: width / 2 - 0.5, y: height / 2 - 0.5, z: depth / 2 - 0.5 }}
 						on:start={() => {
 							isMoving.set(true);
@@ -303,8 +347,8 @@
 				<T.Group>
 					{#each cube as xAxes, x}
 						{#each xAxes as yAxes, y}
-							{#each yAxes as zAxes, z}
-								{#if zAxes.type !== 'air'}
+							{#each yAxes as box, z}
+								{#if box.type !== 'air'}
 									{@const texture = getTextureForBlock(x, y, z)}
 									<Box
 										position={{ x, y, z }}
@@ -312,17 +356,36 @@
 										{texture}
 										{updateRef}
 										{isMoving}
+										isFlagged={box.isFlagged}
+										facing={box.facing}
 									/>
+									
 								{/if}
 							{/each}
 						{/each}
 					{/each}
-				</T.Group>
+				</T.Group>-
 			</Canvas>
 		{/key}
 	{/if}
 </div>
 <Toolpicker bind:value={currentTool} />
-<p class="badge fixed left-5 bottom-5">{estimatedBombsRemaining}</p>
-<!--<GameOver restart={() => init()} />
--->
+<p class="badge variant-filled-primary py-1 px-2 fixed left-5 bottom-5 flex gap-1">
+	<svg height="1em" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+		<path
+			d="M34.0738 3.88906L32.8492 0.482422C32.7082 0.192969 32.3965 0 32.0699 0C31.7434 0 31.4391 0.192969 31.298 0.482422L30.0734 3.88906L26.6594 5.13594C26.3402 5.25469 26.1176 5.57383 26.125 5.90781C26.125 6.2418 26.3477 6.55352 26.6594 6.66484L30.0512 7.91172L31.298 11.3109C31.4094 11.6375 31.7285 11.8676 32.0699 11.8676C32.4113 11.8676 32.7305 11.6375 32.8418 11.3109L34.0664 7.91172L37.4582 6.66484C37.7699 6.55352 37.9926 6.2418 37.9926 5.90781C37.9926 5.56641 37.7699 5.24727 37.4582 5.13594L34.0738 3.88906ZM24.2473 7.82266C23.3195 6.89492 21.8129 6.89492 20.8852 7.82266L20.6699 8.03789C19.0371 7.44414 17.2707 7.125 15.4375 7.125C6.90977 7.125 0 14.0348 0 22.5625C0 31.0902 6.90977 38 15.4375 38C23.9652 38 30.875 31.0902 30.875 22.5625C30.875 20.7293 30.5559 18.9629 29.9695 17.3301L30.1848 17.1148C31.1125 16.1871 31.1125 14.6805 30.1848 13.7527L24.2473 7.81523V7.82266ZM14.8438 14.25C10.5836 14.25 7.125 17.7086 7.125 21.9688V22.5625C7.125 23.2156 6.59062 23.75 5.9375 23.75C5.28438 23.75 4.75 23.2156 4.75 22.5625V21.9688C4.75 16.3949 9.26992 11.875 14.8438 11.875H15.4375C16.0906 11.875 16.625 12.4094 16.625 13.0625C16.625 13.7156 16.0906 14.25 15.4375 14.25H14.8438Z"
+			fill="black"
+		/>
+	</svg>
+	{estimatedBombsRemaining}
+</p>
+<p class="badge variant-filled-primary py-1 px-2 fixed right-5 top-5 flex gap-1">
+	<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"
+		><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path
+			d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"
+		/></svg
+	>
+	{new Date(timePlayed).toISOString().substring(11, 19)}
+</p>
+<GameOver restart={() => init()} />
