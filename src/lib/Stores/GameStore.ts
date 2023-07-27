@@ -8,6 +8,7 @@ type gameStoreType = {
     isGameWon: boolean;
     endTime?: number;
     clicks: number;
+    threeBV: number;
 } & ({
     isGameOver: true;
     isGameWon: boolean;

@@ -14,3 +14,5 @@ export type Block =
 				z: number;
 				type: 'air';
 		  };
+
+export type Cube = Block[][][];

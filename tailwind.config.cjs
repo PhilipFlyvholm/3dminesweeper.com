@@ -12,8 +12,12 @@ module.exports = {
 		)
 	],
 	theme: {
-		extend: {},
-	},
+		extend: {
+		  backgroundImage: {
+			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+		  }
+		}
+	  },
 	plugins: [
 		// 3. Append the Skeleton plugin to the end of this list
 		...require('@skeletonlabs/skeleton/tailwind/skeleton.cjs')()

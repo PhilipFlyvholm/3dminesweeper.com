@@ -6,6 +6,12 @@
 	
 	// Finally, your application's global stylesheet (sometimes labeled 'app.css')
 	import '../app.postcss';
+	import { AppShell } from '@skeletonlabs/skeleton';
+	import Header from '$lib/Components/nav/header.svelte';
+	import Footer from '$lib/Components/nav/footer.svelte';
 </script>
-
-<slot />
+<AppShell>
+	<svelte:fragment slot="pageHeader"><Header/></svelte:fragment>
+	<slot />
+	<svelte:fragment slot="pageFooter"><Footer/></svelte:fragment>
+</AppShell>
