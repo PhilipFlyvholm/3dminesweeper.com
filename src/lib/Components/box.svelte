@@ -7,7 +7,7 @@
 	import { onMount } from 'svelte';
 	import { spring } from 'svelte/motion';
 	import { writable, type Writable } from 'svelte/store';
-	import type { Group, Mesh } from 'three';
+	import type { Group, Mesh, Texture } from 'three';
 
 	export let clickCallback: (
 		pos: { x: number; y: number; z: number },
@@ -30,15 +30,20 @@
 	const isTouch = isTouchDevice();
 	let mesh: Mesh;
 	let obj = writable<Group | null>(null);
+	let blockTexture = writable<Texture | undefined>(undefined);
 
 	onMount(() => {
 		updateRef(position, mesh);
 	});
 	onMount(async () => {
 		$obj = await getModel('flag');
+		$blockTexture = await getTexture(texture);
+	});
+	
+	$: getTexture(texture).then((t) => {
+		blockTexture.set(t);
 	});
 
-	$: blockTexture = getTexture(texture);
 	isMoving.subscribe(() => {
 		if ($isMoving && $scale !== 1) $scale = 1;
 	});
@@ -70,7 +75,9 @@
 	/>
 
 	<T.BoxGeometry />
-	<T.MeshBasicMaterial map={blockTexture} />
+	{#if $blockTexture && $blockTexture !== undefined}
+		<T.MeshBasicMaterial map={$blockTexture} />
+	{/if}
 </T.Mesh>
 {#if isFlagged && $obj && $obj !== null}
 	{@const rotation = {

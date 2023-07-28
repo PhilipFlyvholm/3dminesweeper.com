@@ -4,8 +4,8 @@
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
 	import gameStore from '$lib/Stores/GameStore';
 	import { getTexture } from '$lib/Textures';
-	import type { Block, Cube } from '$lib/Types/GameTypes';
-	import { calculate3BV, createCube, getBombsAround } from '$lib/Utils/GenerationUtil';
+	import type { Block } from '$lib/Types/GameTypes';
+	import { createCube, getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { Canvas, OrbitControls, T } from '@threlte/core';
 	import { onMount } from 'svelte';
 	import { tweened } from 'svelte/motion';
@@ -71,7 +71,7 @@
 			//Left click
 			if (block.type === 'bomb') {
 				console.log('You clicked a bomb!');
-				updateTexture(pos.x, pos.y, pos.z, ref);
+				updateTextureAsync(pos.x, pos.y, pos.z, ref);
 				gameOver();
 				return;
 			}
@@ -79,7 +79,7 @@
 			if (block.isSweeped) return;
 			$gameStore.clicks++;
 			block.isSweeped = true;
-			cascadeEmptyBlocks();
+			cascadeEmptyBlocks(pos.x, pos.y, pos.z);
 			checkWin();
 		} else {
 			//Right click
@@ -94,54 +94,48 @@
 			$gameStore.clicks++;
 		}
 		cube[pos.x][pos.y][pos.z] = block;
-		updateTexture(pos.x, pos.y, pos.z, ref);
+		updateTextureAsync(pos.x, pos.y, pos.z, ref);
 
 		checkWin();
 	}
 
-	function cascadeEmptyBlocks() {
-		let hasChanged = false;
+	function cascadeEmptyBlocks(x:number, y:number, z:number) {
 		let update: Block[] = [];
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < height; y++) {
-				for (let z = 0; z < depth; z++) {
-					const block = cube[x][y][z];
+		
+		const bombsAround = getBombsAround(x, y, z, cube);
+		if (bombsAround !== 0) return;
+		for (let deltaX = -1; deltaX <= 1; deltaX++) {
+			for (let deltaY = -1; deltaY <= 1; deltaY++) {
+				for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
+					if (deltaX === 0 && deltaY === 0 && deltaZ === 0) continue;
+					const finalX = x + deltaX;
+					const finalY = y + deltaY;
+					const finalZ = z + deltaZ;
+					if (finalX < 0 || finalX >= width) continue;
+					if (finalY < 0 || finalY >= height) continue;
+					if (finalZ < 0 || finalZ >= depth) continue;
+					const block = cube[finalX][finalY][finalZ];
+					if(!block) continue;
 					if (block.type === 'air') continue;
 					if (block.type === 'bomb') continue;
-					if (!block.isSweeped) continue;
-					const bombsAround = getBombsAround(x, y, z, cube);
-					if (bombsAround !== 0) continue;
-					for (let deltaX = -1; deltaX <= 1; deltaX++) {
-						for (let deltaY = -1; deltaY <= 1; deltaY++) {
-							for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
-								if (deltaX === 0 && deltaY === 0 && deltaZ === 0) continue;
-								const finalX = x + deltaX;
-								const finalY = y + deltaY;
-								const finalZ = z + deltaZ;
-								if (finalX < 0 || finalX >= width) continue;
-								if (finalY < 0 || finalY >= height) continue;
-								if (finalZ < 0 || finalZ >= depth) continue;
-								const block = cube[finalX][finalY][finalZ];
-								if (block.type === 'air') continue;
-								if (block.type === 'bomb') continue;
-								if (block.isSweeped) continue;
-								update.push(block);
-								block.isSweeped = true;
-								updateTexture(finalX, finalY, finalZ, cubeRefs[finalX][finalY][finalZ]);
-								hasChanged = true;
-							}
-						}
-					}
+					if (block.isSweeped) continue;
+					
+					update.push(block);
+					block.isSweeped = true;
+					updateTextureAsync(finalX, finalY, finalZ, cubeRefs[finalX][finalY][finalZ]);
 				}
 			}
 		}
-		if (hasChanged) cascadeEmptyBlocks();
+		update.forEach((block) => {
+			cascadeEmptyBlocks(block.x, block.y, block.z);
+		});
 	}
 
-	function updateTexture(x: number, y: number, z: number, ref: Mesh) {
+	async function updateTextureAsync(x: number, y: number, z: number, ref: Mesh) {
 		const newTexure = getTextureForBlock(x, y, z);
 		if (!newTexure) return;
-		ref.material = new MeshBasicMaterial({ map: getTexture(newTexure) });
+		const texture = await getTexture(newTexure);
+		ref.material = new MeshBasicMaterial({ map: texture });
 	}
 
 	function getTextureForBlock(x: number, y: number, z: number) {
@@ -169,6 +163,10 @@
 
 	function isComplete() {
 		for (let x = 0; x < width; x++) {
+			/*if(x > 0 && x < width - 1){
+				x = width - 1;
+				continue;
+			}*/
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
 					const block = cube[x][y][z];
@@ -224,7 +222,7 @@
 					} else {
 						block.isSweeped = true;
 					}
-					updateTexture(x, y, z, cubeRefs[x][y][z]);
+					updateTextureAsync(x, y, z, cubeRefs[x][y][z]);
 				}
 			}
 		}
@@ -276,6 +274,7 @@
 			}
 		}, 1000);
 	}
+	
 </script>
 
 <div class="gameScreen relative h-full w-full">
@@ -295,6 +294,7 @@
 					</div>
 				{/if}
 				<Canvas>
+					<T.Cache enabled={true} />
 					<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
 						<OrbitControls
 							enablePan={false}

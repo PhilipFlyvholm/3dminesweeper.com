@@ -1,6 +1,6 @@
-import { useTexture } from "@threlte/core";
-import type { Texture } from "three";
-import * as THREE from "three";
+import { useLoader, useTexture } from '@threlte/core';
+import * as THREE from 'three';
+import { TextureLoader, type Texture } from 'three';
 
 const texturePaths: {
 	name: string;
@@ -65,24 +65,50 @@ const texturePaths: {
 ];
 
 let loaded = false;
-export const textures: Map<string, Texture> = new Map();
+let loading = false;
+const textures: Map<string, Texture> = new Map();
+const textureLoader = useLoader(TextureLoader, () => new TextureLoader());
 
-function loadTextures(): void {
-	texturePaths.forEach(({ name, path }) => {
-		const blockTexture = useTexture(path, {
-			onError: (e) => console.log("Failed to load",name, e)
+async function loadTextures(): Promise<void> {
+	loading = true;
+	const loaders = texturePaths.map(({ name, path }) => {
+		return new Promise((resolve, reject) => {
+			textureLoader
+				.loadAsync(path)
+				.then((blockTexture) => {
+					blockTexture.repeat.set(1, 1);
+					blockTexture.wrapS = blockTexture.wrapT = THREE.RepeatWrapping;
+					blockTexture.colorSpace = THREE.SRGBColorSpace;
+					textures.set(name, blockTexture);
+					resolve(blockTexture);
+				})
+				.catch((e) => {
+					console.log('Failed to load', name, e);
+					reject(e);
+				});
 		});
-		blockTexture.repeat.set(1, 1);
-		blockTexture.wrapS = blockTexture.wrapT = THREE.RepeatWrapping;
-		blockTexture.colorSpace = THREE.SRGBColorSpace;
-		textures.set(name, blockTexture);
 	});
+	await Promise.all(loaders);
 	loaded = true;
+	return Promise.resolve();
 }
 
-export function getTexture(name: string): Texture | undefined {
-    if (!loaded) {
-        loadTextures();
-    }
-    return textures.get(name);
+export async function getTexture(name: string): Promise<Texture | undefined> {
+	if (!loaded) {
+		if (loading) {
+			console.log('Waiting for textures to load');
+			while (!loaded) {
+				await new Promise((resolve) => setTimeout(resolve, 100));
+			}
+		} else {
+			console.log('Loading textures');
+			await loadTextures();
+		}
+	}
+	const texture = textures.get(name);
+	if (texture === undefined) {
+		console.warn(`Texture ${name} not found`);
+		return undefined;
+	}
+	return texture;
 }

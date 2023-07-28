@@ -5,7 +5,6 @@ import type { Block, Cube } from '$lib/Types/GameTypes';
     3BV is the minimum number of clicks required to open all the cells
     3BV is a measure of the difficulty of a cube
     A cube is a 3D array of blocks (Block[][][]) where air blocks can be ignored
-
 */
 export function calculate3BV(cube: Block[][][]) {
 	let count = 0;
@@ -58,8 +57,8 @@ export function calculate3BV(cube: Block[][][]) {
 	for (let x = 0; x < cube.length; x++) {
 		for (let y = 0; y < cube[x].length; y++) {
 			for (let z = 0; z < cube[x][y].length; z++) {
-                const block = cube[x][y][z];
-				if (isMarked(x, y, z) || block.type === "bomb") continue;
+				const block = cube[x][y][z];
+				if (isMarked(x, y, z) || block.type === 'bomb') continue;
 
 				count++;
 			}
@@ -97,7 +96,12 @@ export function getBombsAround(x: number, y: number, z: number, cube: Block[][][
 	return bombs;
 }
 
-export function createCube(width:number, height:number, depth:number, iteration = 0): { cube: Cube; difficulty: number; estimatedBombsRemaining: number } {
+export function createCube(
+	width: number,
+	height: number,
+	depth: number,
+	iteration = 0
+): { cube: Cube; difficulty: number; estimatedBombsRemaining: number } {
 	let estimatedBombsRemaining = 0;
 	const totalAmount =
 		width * height * depth -
@@ -124,10 +128,8 @@ export function createCube(width:number, height:number, depth:number, iteration 
 		bombLocs.push({ x, y, z });
 	}
 
-    
-    
-    const cube: Cube = [];
-    for (let x = 0; x < width; x++) {
+	const cube: Cube = [];
+	for (let x = 0; x < width; x++) {
 		cube[x] = [];
 		for (let y = 0; y < height; y++) {
 			cube[x][y] = [];
@@ -177,8 +179,8 @@ export function createCube(width:number, height:number, depth:number, iteration 
 		}
 	}
 	const difficulty = calculate3BV(cube);
-    console.log(difficulty);
-    
-	if (difficulty < totalBombs + 3 && iteration < 50) return createCube(width, height, depth, iteration + 1);
+
+	if (difficulty < totalBombs + 3 && iteration < 50)
+		return createCube(width, height, depth, iteration + 1);
 	return { cube, difficulty, estimatedBombsRemaining };
 }
