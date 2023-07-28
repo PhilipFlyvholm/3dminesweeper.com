@@ -11,7 +11,8 @@
 	import { tweened } from 'svelte/motion';
 	import { writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
-	import { DefaultLoadingManager, MeshBasicMaterial, type Mesh, Fog } from 'three';
+	import { DefaultLoadingManager, Fog, MeshBasicMaterial, type Mesh } from 'three';
+	import Loading from './Loading.svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
 
 	export let width = 5;
@@ -52,8 +53,6 @@
 			threeBV: generation.difficulty
 		};
 	}
-
-	
 
 	async function handleClick(
 		pos: { x: number; y: number; z: number },
@@ -110,7 +109,7 @@
 					if (block.type === 'air') continue;
 					if (block.type === 'bomb') continue;
 					if (!block.isSweeped) continue;
-					const bombsAround = getBombsAround(x, y, z,cube);
+					const bombsAround = getBombsAround(x, y, z, cube);
 					if (bombsAround !== 0) continue;
 					for (let deltaX = -1; deltaX <= 1; deltaX++) {
 						for (let deltaY = -1; deltaY <= 1; deltaY++) {
@@ -280,7 +279,9 @@
 </script>
 
 <div class="gameScreen relative h-full w-full">
-	<div class="canvasContainer h-full w-full bg-gradient-radial to-[rgb(var(--color-surface-900))] from-[rgb(var(--color-primary-500))] ">
+	<div
+		class="canvasContainer h-full w-full bg-gradient-radial to-[rgb(var(--color-surface-900))] from-[rgb(var(--color-primary-500))]"
+	>
 		{#if $gameStore}
 			{#key $gameStore.gameId}
 				{#if $tweenedProgress < 1}
@@ -290,10 +291,7 @@
 						}}
 						class="loadingWrapper absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-gray-900"
 					>
-						<p class="loading">Loading</p>
-						<div class="bar-wrapper relative h-[10px] w-[33.33%] border-secondary-500">
-							<div class="bar bg-primary-500 h-full" style="width: {$tweenedProgress * 100}%" />
-						</div>
+						<Loading enableRandomLoadingText={true} progress={$tweenedProgress * 100} />
 					</div>
 				{/if}
 				<Canvas>
@@ -317,7 +315,7 @@
 					<T.DirectionalLight castShadow position={[3, 10, 10]} />
 					<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 					<T.AmbientLight intensity={0.2} />
-					<T.Fog color={[214, 15, 15]} near={0.25} far={4}/>
+					<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
 					<T.Group>
 						{#each cube as xAxes, x}
 							{#each xAxes as yAxes, y}
@@ -369,3 +367,11 @@
 	</DataOverlay>
 	<GameOver restart={() => init()} />
 </div>
+
+<style>
+	.canvasContainer {
+		-webkit-user-select: none; /* Safari */
+		-ms-user-select: none; /* IE 10 and IE 11 */
+		user-select: none; /* Standard syntax */
+	}
+</style>

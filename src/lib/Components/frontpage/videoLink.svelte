@@ -1,0 +1,36 @@
+<script lang="ts">
+	export let src = '';
+    export let text = ''
+	export let href = '';
+
+	let video: HTMLVideoElement;
+
+	function play() {
+		video.play();
+	}
+	function stop() {
+		//Set video to beginning
+		video.currentTime = 0;
+		video.pause();
+	}
+</script>
+
+<a
+	class="border-8 border-primary-500 rounded relative w-full sm:w-[30%] m-5 sm:m-0"
+	on:mouseenter={play}
+	on:mouseleave={stop}
+	href={href}
+>
+	<video style="width: 100%;" muted loop bind:this={video} {src}>
+		<track kind="captions" />
+	</video>
+	<div class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%]">
+        <p class="vt323 text-lg">{text}</p>
+    </div>
+</a>
+
+<style>
+	video::-webkit-media-controls {
+		display: none !important;
+	}
+</style>

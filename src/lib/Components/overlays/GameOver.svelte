@@ -12,15 +12,14 @@
 	}
 	let efficiency = 0;
 	$: efficiency =
-	!$gameStore || $gameStore.clicks === 0
+		!$gameStore || $gameStore.clicks === 0
 			? 0
 			: Math.floor(($gameStore.threeBV / $gameStore.clicks) * 10000) / 100;
 	let threeBVPerSecond = 0;
 	$: threeBVPerSecond = !$gameStore
-			? 0
-			:
-		Math.floor(($gameStore.threeBV / (timeDiffInSeconds === 0 ? 1 : timeDiffInSeconds)) * 100) /
-		100;
+		? 0
+		: Math.floor(($gameStore.threeBV / (timeDiffInSeconds === 0 ? 1 : timeDiffInSeconds)) * 100) /
+		  100;
 </script>
 
 {#if $gameStore && $gameStore.isGameOver}
@@ -31,7 +30,9 @@
 		<h1 class="h1" class:glitch={!$gameStore.isGameWon}>
 			{text}
 		</h1>
-		<p>Bombs remaining: <span>{$gameStore.bombs}</span></p>
+		{#if $gameStore.bombs > 0}
+			<p>Bombs remaining: <span>{$gameStore.bombs}</span></p>
+		{/if}
 		<p>Time: <span>{prettyDate}</span></p>
 		<p>Clicks: <span>{$gameStore.clicks}</span></p>
 		<p>3BV: <span>{$gameStore.threeBV}</span></p>
