@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let src = '';
+	export let sources:string[] = [];
     export let text = ''
 	export let href = '';
 
@@ -21,7 +21,11 @@
 	on:mouseleave={stop}
 	href={href}
 >
-	<video style="width: 100%;" muted loop bind:this={video} {src}>
+	<video style="width: 100%;" muted loop bind:this={video}>
+		{#each sources as src}
+			{@const type = src.split(".")[src.split(".").length-1]}
+			<source src={src} type="video/{type}" />
+		{/each}
 		<track kind="captions" />
 	</video>
 	<div class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%]">
