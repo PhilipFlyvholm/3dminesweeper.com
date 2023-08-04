@@ -6,7 +6,7 @@
 	import { getTexture } from '$lib/Textures';
 	import type { Block } from '$lib/Types/GameTypes';
 	import { createCube, getBombsAround } from '$lib/Utils/GenerationUtil';
-	import { Canvas, OrbitControls, T } from '@threlte/core';
+	import { Canvas, T } from '@threlte/core';
 	import { onMount } from 'svelte';
 	import { tweened } from 'svelte/motion';
 	import { writable } from 'svelte/store';
@@ -14,12 +14,14 @@
 	import { DefaultLoadingManager, Fog, MeshBasicMaterial, type Mesh } from 'three';
 	import Loading from './Loading.svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
+	import { OrbitControls } from '@threlte/extras';
+	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
 
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
 
-	let isMoving = writable(false);
+	let isMoving = writable<'click' | 'drag' | 'none'>('none');
 	let currentTool: 'shovel' | 'flag' = 'shovel';
 	let cubeRefs: Mesh[][][] = [];
 	let estimatedBombsRemaining = 0;
@@ -58,8 +60,8 @@
 		pos: { x: number; y: number; z: number },
 		clickType: 'left' | 'right',
 		ref: Mesh
-	) {
-		if ($isMoving) return;
+	) {	
+		if ($isMoving !== 'none') return;
 		const block = cube[pos.x][pos.y][pos.z];
 		if (block.type === 'air') return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
@@ -99,9 +101,9 @@
 		checkWin();
 	}
 
-	function cascadeEmptyBlocks(x:number, y:number, z:number) {
+	function cascadeEmptyBlocks(x: number, y: number, z: number) {
 		let update: Block[] = [];
-		
+
 		const bombsAround = getBombsAround(x, y, z, cube);
 		if (bombsAround !== 0) return;
 		for (let deltaX = -1; deltaX <= 1; deltaX++) {
@@ -115,11 +117,11 @@
 					if (finalY < 0 || finalY >= height) continue;
 					if (finalZ < 0 || finalZ >= depth) continue;
 					const block = cube[finalX][finalY][finalZ];
-					if(!block) continue;
+					if (!block) continue;
 					if (block.type === 'air') continue;
 					if (block.type === 'bomb') continue;
 					if (block.isSweeped) continue;
-					
+
 					update.push(block);
 					block.isSweeped = true;
 					updateTextureAsync(finalX, finalY, finalZ, cubeRefs[finalX][finalY][finalZ]);
@@ -274,7 +276,30 @@
 			}
 		}, 1000);
 	}
-	
+
+	const dragDelay = 500; //The amount of time to wait before starting to drag
+	const dragEndDelay = 100; //The amount of time to wait before stopping dragging
+	let stopDraggingTimeout: NodeJS.Timeout | undefined;
+	function handlePanStart() {
+		isMoving.set('click');
+		
+		setTimeout(async () => {
+			if ($isMoving === 'click') {
+				isMoving.set('drag');
+			}
+		}, dragDelay);
+	}
+
+	function handlePanEnd() {
+		if ($isMoving === 'click'){
+			isMoving.set('none');
+		} 
+		else {
+			stopDraggingTimeout = setTimeout(async () => {
+				if ($isMoving !== 'none') isMoving.set('none');
+			}, dragEndDelay);
+		}
+	}
 </script>
 
 <div class="gameScreen relative h-full w-full">
@@ -294,48 +319,46 @@
 					</div>
 				{/if}
 				<Canvas>
-					<T.Cache enabled={true} />
-					<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
-						<OrbitControls
-							enablePan={false}
-							enableZoom={true}
-							enableRotate={true}
-							autoRotate={!isPlaying}
-							minDistance={Math.max(width, height, depth) * 2 + 5}
-							maxDistance={Math.max(width, height, depth) * 2 + 100}
-							target={{ x: width / 2 - 0.5, y: height / 2 - 0.5, z: depth / 2 - 0.5 }}
-							on:start={() => {
-								isMoving.set(true);
-							}}
-							on:end={() => {
-								isMoving.set(false);
-							}}
-						/>
-					</T.PerspectiveCamera>
-					<T.DirectionalLight castShadow position={[3, 10, 10]} />
-					<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
-					<T.AmbientLight intensity={0.2} />
-					<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
-					<T.Group>
-						{#each cube as xAxes, x}
-							{#each xAxes as yAxes, y}
-								{#each yAxes as box, z}
-									{#if box.type !== 'air'}
-										{@const texture = getTextureForBlock(x, y, z)}
-										<Box
-											position={{ x, y, z }}
-											clickCallback={handleClick}
-											{texture}
-											{updateRef}
-											{isMoving}
-											isFlagged={box.isFlagged}
-											facing={box.facing}
-										/>
-									{/if}
+					<InteractiveScene>
+						<T.Cache enabled={true} />
+						<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
+							<OrbitControls
+								enablePan={false}
+								enableZoom={true}
+								enableRotate={true}
+								autoRotate={!isPlaying}
+								minDistance={Math.max(width, height, depth) * 2 + 5}
+								maxDistance={Math.max(width, height, depth) * 2 + 100}
+								target={[width / 2 - 0.5, height / 2 - 0.5, depth / 2 - 0.5]}
+								on:start={handlePanStart}
+								on:end={handlePanEnd}
+							/>
+						</T.PerspectiveCamera>
+						<T.DirectionalLight castShadow position={[3, 10, 10]} />
+						<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
+						<T.AmbientLight intensity={0.2} />
+						<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
+						<T.Group>
+							{#each cube as xAxes, x}
+								{#each xAxes as yAxes, y}
+									{#each yAxes as box, z}
+										{#if box.type !== 'air'}
+											{@const texture = getTextureForBlock(x, y, z)}
+											<Box
+												position={{ x, y, z }}
+												clickCallback={handleClick}
+												{texture}
+												{updateRef}
+												{isMoving}
+												isFlagged={box.isFlagged}
+												facing={box.facing}
+											/>
+										{/if}
+									{/each}
 								{/each}
 							{/each}
-						{/each}
-					</T.Group>-
+						</T.Group>-
+					</InteractiveScene>
 				</Canvas>
 			{/key}
 		{/if}

@@ -1,4 +1,4 @@
-import { useLoader, useTexture } from '@threlte/core';
+import { useLoader } from '@threlte/core';
 import * as THREE from 'three';
 import { TextureLoader, type Texture } from 'three';
 
@@ -67,14 +67,14 @@ const texturePaths: {
 let loaded = false;
 let loading = false;
 const textures: Map<string, Texture> = new Map();
-const textureLoader = useLoader(TextureLoader, () => new TextureLoader());
 
 async function loadTextures(): Promise<void> {
+	const textureLoader = useLoader(TextureLoader);
 	loading = true;
 	const loaders = texturePaths.map(({ name, path }) => {
 		return new Promise((resolve, reject) => {
 			textureLoader
-				.loadAsync(path)
+				.load(path)
 				.then((blockTexture) => {
 					blockTexture.repeat.set(1, 1);
 					blockTexture.wrapS = blockTexture.wrapT = THREE.RepeatWrapping;

@@ -1,4 +1,3 @@
-import { useLoader } from '@threlte/core';
 import { Group } from 'three';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
@@ -29,19 +28,18 @@ const modelPaths: {
 		}
 	}
 ];
-const mtlLoader = useLoader(MTLLoader, () => new MTLLoader());
-const objLoader = useLoader(OBJLoader, () => new OBJLoader());
+
 let loading = false;
 let loaded = false;
 
-
 async function loadModels() {
 	loading = true;
-
-	const modelPromies = modelPaths.map((modelPath) => {
+	const mtlLoader = new MTLLoader();
+	const objLoader = new OBJLoader();
+	const modelPromies = modelPaths.map(async (modelPath) => {
 		return mtlLoader.loadAsync(modelPath.mtlPath).then((material) => {
 			objLoader.setMaterials(material);
-			return objLoader.loadAsync(modelPath.objPath).then((obj) => {
+			return objLoader.loadAsync(modelPath.objPath).then(async (obj) => {
 				if (modelPath.options?.scale) {
 					obj.scale.set(
 						modelPath.options.scale.x,
@@ -56,7 +54,6 @@ async function loadModels() {
 	await Promise.all(modelPromies);
 	loaded = true;
 	console.log('Models loaded');
-	
 }
 
 export async function getModel(name: string): Promise<Group> {
@@ -76,8 +73,8 @@ export async function getModel(name: string): Promise<Group> {
 	const model = models.get(name);
 	if (model === undefined) {
 		console.warn(`Model ${name} not found`);
-		if(bigShot) console.log('Big shot');
-		
+		if (bigShot) console.log('Big shot');
+
 		return new Group();
 	}
 	return new Group().copy(model);
