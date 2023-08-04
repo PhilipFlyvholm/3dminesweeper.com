@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getModel } from '$lib/Models';
 	import gameStore from '$lib/Stores/GameStore';
+	import { getModel } from '$lib/Models';
 	import { getTexture } from '$lib/Textures';
 	import { isTouchDevice } from '$lib/Utils/DeviceUtil';
 	import { T, HierarchicalObject } from '@threlte/core';
@@ -21,7 +21,7 @@
 
 	export let position = { x: 0, y: 0, z: 0 };
 	export let texture = 'block_default';
-	export let isMoving: Writable<"click"|"drag"|"none">;
+	export let isMoving: Writable<'click' | 'drag' | 'none'>;
 	export let isFlagged: boolean;
 	export let facing: 'up' | 'down' | 'left' | 'right' | 'front' | 'back';
 
@@ -54,19 +54,19 @@
 	position={[position.x, position.y, position.z]}
 	bind:ref={mesh}
 	on:click={(e) => {
-		if ($isMoving !== "none") return;
+		if ($isMoving !== 'none') return;
 		clickCallback(position, 'left', mesh);
 	}}
 	on:contextmenu={(e) => {
-		if ($isMoving !== "none") return;
+		if ($isMoving !== 'none') return;
 		clickCallback(position, 'right', mesh);
 	}}
 	on:pointerenter={() => {
-		if ($isMoving !== "none" || isTouch) return;
+		if ($isMoving !== 'none' || isTouch) return;
 		if ($gameStore.isPlaying) $scale = 1.15;
 	}}
 	on:pointerleave={() => {
-		if ($isMoving !== "none" || isTouch) return;
+		if ($isMoving !== 'none' || isTouch) return;
 		$scale = 1;
 	}}
 >
