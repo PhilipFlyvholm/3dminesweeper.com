@@ -10,6 +10,9 @@
 	import Header from '$lib/Components/nav/header.svelte';
 	import Footer from '$lib/Components/nav/footer.svelte';
 </script>
+<svelte:head>
+	<title>3D Minesweeper</title>
+</svelte:head>
 <AppShell>
 	<svelte:fragment slot="pageHeader"><Header/></svelte:fragment>
 	<slot />

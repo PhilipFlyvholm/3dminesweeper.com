@@ -5,6 +5,10 @@
     export let data: PageData;
     let { width, height, depth } = data.size;
 </script>
+
+<svelte:head>
+	<title>3D Minesweeper: {width}x{height}x{depth}</title>
+</svelte:head>
 {#if width*height*depth > 3375}
     <!--Too big max is 15x15x15-->
     <h1 class="h1 text-center my-5">That is a too big of a cube to draw</h1>
