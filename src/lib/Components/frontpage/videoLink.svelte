@@ -2,6 +2,7 @@
 	export let sources:string[] = [];
     export let text = ''
 	export let href = '';
+	export let poster:string | undefined = undefined;
 
 	let video: HTMLVideoElement;
 
@@ -21,7 +22,7 @@
 	on:mouseleave={stop}
 	href={href}
 >
-	<video style="width: 100%;" muted loop bind:this={video}>
+	<video style="width: 100%;" muted loop bind:this={video} poster={poster}>
 		{#each sources as src}
 			{@const type = src.split(".")[src.split(".").length-1]}
 			<source src={src} type="video/{type}" />

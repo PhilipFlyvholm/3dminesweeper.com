@@ -6,9 +6,9 @@
 	<h1 class="h1 text-center p-0">3D Minesweeper</h1>
 	<p class="text-center font-bold my-5">Select a difficulty</p>
 	<div class="flex flex-wrap justify-between w-full">
-		<VideoLink sources={['/videos/3x3x3-edited.webm']} href="/play/3x3x3" text="3x3x3" />
-		<VideoLink sources={['/videos/5x5x5-edited.webm']} href="/play/5x5x5" text="5x5x5" />
-		<VideoLink sources={['/videos/10x10x10-edited.webm']} href="/play/10x10x10" text="10x10x10" />
+		<VideoLink sources={['/videos/3x3x3/output.webm','/videos/3x3x3/output.mp4']} poster="/videos/3x3x3/output.jpeg" href="/play/3x3x3" text="3x3x3" />
+		<VideoLink sources={['/videos/5x5x5/output.webm','/videos/5x5x5/output.mp4']} poster="/videos/5x5x5/output.jpeg" href="/play/5x5x5" text="5x5x5" />
+		<VideoLink sources={['/videos/10x10x10/output.webm', '/videos/10x10x10/output.mp4']} poster="/videos/10x10x10/output.jpeg" href="/play/10x10x10" text="10x10x10" />
 	</div>
 </section>
 <section class="card variant-ghost-primary py-5 px-5 md:px-10 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">

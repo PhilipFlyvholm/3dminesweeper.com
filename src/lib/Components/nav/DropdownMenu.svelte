@@ -3,7 +3,7 @@
 
 	const uniqueId = Math.random().toString(36).substring(2, 11);
 	const popupCombobox: PopupSettings = {
-		event: 'focus-click',
+		event: 'focus-blur',
 		target: `popupCombobox-${uniqueId}`,
 		placement: 'bottom',
 		closeQuery: '.listbox-item'
