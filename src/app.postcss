@@ -1,10 +1,15 @@
 /* Write your global styles here, in PostCSS syntax */
+@import url(https://fonts.bunny.net/css?family=alegreya-sans:300,500,800,900);
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html, body { 
+    @apply h-full overflow-hidden; 
+    font-family: 'Alegreya Sans', sans-serif;
+}
 
 @font-face{
     font-family: VT323;
     src: url("/fonts/VT323-Regular.ttf")
 }
-html, body { @apply h-full overflow-hidden; }
