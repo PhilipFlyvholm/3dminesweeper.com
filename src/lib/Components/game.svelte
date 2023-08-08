@@ -55,7 +55,6 @@
 		duration: 200
 	});
 	$: tweenedProgress.set($progress);
-
 	DefaultLoadingManager.onStart = function () {
 		//Do something on loading start
 		console.log('Loading started');
@@ -63,6 +62,7 @@
 
 	DefaultLoadingManager.onLoad = function () {
 		console.log('Loading Complete!');
+		$progress = 1;
 	};
 
 	DefaultLoadingManager.onProgress = function (_, itemsLoaded, itemsTotal) {
