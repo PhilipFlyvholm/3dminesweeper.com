@@ -122,18 +122,4 @@
 	</ol>
 </section>
 
-<style>
-	:global(h1, .vt323),
-	h1 {
-		font-family: 'VT323', 'Alegreya Sans', sans-serif;
-	}
 
-	h2,h3{
-		font-weight: bold;
-		margin: 1rem 0 .25rem 0;
-	}
-	strong{
-		display: block;
-		margin: 1rem 0 .25rem 0;
-	}
-</style>

@@ -12,7 +12,7 @@
 	import { fade } from 'svelte/transition';
 	import { DefaultLoadingManager } from 'three';
 	import Loading from './Loading.svelte';
-	import { Canvas } from '@threlte/core';
+	import { Canvas, type ThrelteContext } from '@threlte/core';
 
 	export let width = 5;
 	export let height = 5;
@@ -43,7 +43,8 @@
 			startTime: null,
 			isGameWon: false,
 			clicks: 0,
-			threeBV: generation.difficulty
+			threeBV: generation.difficulty,
+			size: { width, height, depth },
 		};
 	}
 
@@ -54,10 +55,12 @@
 	const tweenedProgress = tweened($progress, {
 		duration: 200
 	});
+	let loadingStarted = false;
 	$: tweenedProgress.set($progress);
 	DefaultLoadingManager.onStart = function () {
 		//Do something on loading start
 		console.log('Loading started');
+		loadingStarted = true;
 	};
 
 	DefaultLoadingManager.onLoad = function () {
@@ -67,19 +70,18 @@
 
 	DefaultLoadingManager.onProgress = function (_, itemsLoaded, itemsTotal) {
 		$progress = itemsLoaded / itemsTotal;
+		console.log('Loading file: ' + itemsLoaded + '/' + itemsTotal);
 	};
 
 	DefaultLoadingManager.onError = function (url) {
 		console.log('There was an error loading ' + url);
 	};
 
-	if (import.meta.hot) {
-		setTimeout(() => {
-			if ($progress === 0) {
-				$progress = 1;
-			}
-		}, 1000);
-	}
+	setTimeout(() => {
+		if (!loadingStarted && $progress === 0) {
+			$progress = 1;
+		}
+	}, 1000);
 </script>
 
 <div class="gameScreen relative h-full w-full">
@@ -120,7 +122,7 @@
 				fill="black"
 			/>
 		</svg>
-		{estimatedBombsRemaining}
+		{estimatedBombsRemaining ?? 0}
 	</DataOverlay>
 	<DataOverlay position={'right-5 top-5'}>
 		<svg slot="icon" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"
