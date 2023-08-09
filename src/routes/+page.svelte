@@ -3,7 +3,7 @@
 </script>
 
 <section class="card variant-ghost-primary p-5 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">
-	<h1 class="h1 text-center p-0">3D Minesweeper</h1>
+	<h1 class="h1 text-center p-0 vt323">3D Minesweeper</h1>
 	<p class="text-center font-bold my-5">Select a difficulty</p>
 	<div class="flex flex-wrap justify-between w-full">
 		<VideoLink sources={['/videos/3x3x3/output.webm','/videos/3x3x3/output.mp4']} poster="/videos/3x3x3/output.jpeg" href="/play/3x3x3" text="3x3x3" />
@@ -122,18 +122,4 @@
 	</ol>
 </section>
 
-<style>
-	:global(h1, .vt323),
-	h1 {
-		font-family: 'VT323', 'Alegreya Sans', sans-serif;
-	}
 
-	h2,h3{
-		font-weight: bold;
-		margin: 1rem 0 .25rem 0;
-	}
-	strong{
-		display: block;
-		margin: 1rem 0 .25rem 0;
-	}
-</style>

@@ -2,7 +2,7 @@
 	import gameStore from '$lib/Stores/GameStore';
 	import { OrbitControls } from '@threlte/extras';
 	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
-	import { T, useThrelte } from '@threlte/core';
+	import { T, useRender, useThrelte } from '@threlte/core';
 	import { writable } from 'svelte/store';
 	import { Mesh, MeshBasicMaterial } from 'three';
 	import { getTexture } from '$lib/Textures';
@@ -15,11 +15,11 @@
 	let cubeRefs: Mesh[][][] = [];
 	export let estimatedBombsRemaining: number;
 	export let cube: Block[][][];
-    $: width = cube.length;
-    $: height = cube[0].length;
-    $: depth = cube[0][0].length;
-	const {invalidate} = useThrelte();
-	
+	$: width = cube.length;
+	$: height = cube[0].length;
+	$: depth = cube[0][0].length;
+	const { invalidate } = useThrelte();
+
 	function isComplete() {
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
@@ -198,13 +198,13 @@
 		if (!newTexure) return;
 		const texture = await getTexture(newTexure);
 		ref.material = new MeshBasicMaterial({ map: texture });
-		invalidate()
+		invalidate();
 	}
 
 	let isMoving = writable<'click' | 'drag' | 'none'>('none');
 	let isPlaying = false;
 	$: isPlaying = $gameStore ? $gameStore.isPlaying : false;
-	
+
 	const dragDelay = 500; //The amount of time to wait before starting to drag
 	const dragEndDelay = 100; //The amount of time to wait before stopping dragging
 	let stopDraggingTimeout: NodeJS.Timeout | undefined;
@@ -227,27 +227,36 @@
 			}, dragEndDelay);
 		}
 	}
+	let dataUrl = '';
+	useRender(({ camera, renderer, scene }, delta) => {
+		if (!renderer) return;
+		renderer.render(scene, camera.current);
+		if ($gameStore && $gameStore.isGameOver && dataUrl === '') {
+			const canvas = document.getElementsByTagName('canvas')[0];
+			dataUrl = canvas.toDataURL('image/png', 1.0);
+			$gameStore.image = dataUrl;
+		}
+	});
 </script>
 
-
-	<InteractiveScene>
-		<T.Cache enabled={true} />
-		<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
-			<OrbitControls
-				enablePan={false}
-				enableZoom={true}
-				enableRotate={true}
-				autoRotate={!isPlaying}
-				minDistance={Math.max(width, height, depth) * 2 + 5}
-				maxDistance={Math.max(width, height, depth) * 2 + 100}
-				target={[width / 2 - 0.5, height / 2 - 0.5, depth / 2 - 0.5]}
-				on:start={handlePanStart}
-				on:end={handlePanEnd}
-			/>
-		</T.PerspectiveCamera>
-		<T.DirectionalLight castShadow position={[3, 10, 10]} />
-		<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
-		<T.AmbientLight intensity={0.2} />
-		<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
-		<Cube {cube} {getTextureForBlock} {updateRef} {handleClick} {isMoving}/>
-	</InteractiveScene>
+<InteractiveScene>
+	<T.Cache enabled={true} />
+	<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
+		<OrbitControls
+			enablePan={false}
+			enableZoom={true}
+			enableRotate={true}
+			autoRotate={!isPlaying}
+			minDistance={Math.max(width, height, depth) * 2 + 5}
+			maxDistance={Math.max(width, height, depth) * 2 + 100}
+			target={[width / 2 - 0.5, height / 2 - 0.5, depth / 2 - 0.5]}
+			on:start={handlePanStart}
+			on:end={handlePanEnd}
+		/>
+	</T.PerspectiveCamera>
+	<T.DirectionalLight castShadow position={[3, 10, 10]} />
+	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
+	<T.AmbientLight intensity={0.2} />
+	<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
+	<Cube {cube} {getTextureForBlock} {updateRef} {handleClick} {isMoving} />
+</InteractiveScene>

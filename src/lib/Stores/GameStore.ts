@@ -9,11 +9,17 @@ type gameStoreType = {
     endTime?: number;
     clicks: number;
     threeBV: number;
+    size: {
+        width: number;
+        height: number;
+        depth: number;
+    }
 } & ({
     isGameOver: true;
     isGameWon: boolean;
     endTime: number;
     bombs: number;
+    image?: string;
 } | {
     isGameOver: false;
     isGameWon: false;
