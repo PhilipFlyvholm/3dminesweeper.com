@@ -39,7 +39,7 @@
 	function createToast(message: string, isError = false) {
 		const t: ToastSettings = {
 			message: message,
-			background: isError ? 'variant-filled-error' : undefined,
+			background: isError ? 'variant-filled-error' : undefined
 		};
 
 		// Trigger the toast:
@@ -57,44 +57,61 @@
 		}`;
 
 		const message = `I just played 3D Minesweeper and cleared a ${$gameStore.size.width}x${$gameStore.size.height}x${$gameStore.size.depth} in ${timeString}!`;
-		if (navigator.canShare && navigator.canShare()) {
+		console.log(
+			navigator.canShare,
+			navigator.canShare({ title: 'test', text: 'test', url: 'test' })
+		);
+
+		if (navigator.canShare) {
 			console.log('Sharing');
 
 			const file = $gameStore.image ? dataURLtoFile($gameStore.image, '3dminesweeper.png') : null;
 			const title = '3D Minesweeper';
 			const url = 'https://3dminesweeper.com';
-			if (file && navigator.canShare({ files: [file] })) {
-				navigator
-					.share({
-						title: title,
-						text: message,
-						url: url,
-						files: file ? [file] : undefined
-					})
-					.then(() => {
-						createToast('Successfully shared!');
-						console.log('Share was successful.');
-					})
-					.catch((error) => {
-						createToast('Something went wrong during sharing',true);
-						console.log('Sharing failed', error);
-					});
-			} else {
-				navigator
-					.share({
-						title: title,
-						text: message,
-						url: url
-					})
-					.then(() => {
-						createToast('Successfully shared!');
-						console.log('Share was successful.');
-					})
-					.catch((error) => {
-						createToast('Something went wrong during sharing',true);
-						console.log('Sharing failed', error);
-					});
+			let shareObject: {
+				title: string;
+				url: string;
+				text?: string;
+				files?: File[];
+			} = {
+				title: title,
+				url: url
+			};
+
+			if (
+				file &&
+				navigator.canShare({
+					...shareObject,
+					text: message,
+					files: file ? [file] : undefined
+				})
+			) {
+				shareObject = {
+					...shareObject,
+					text: message,
+					files: file ? [file] : undefined
+				};
+			} else if (
+				navigator.canShare({
+					...shareObject,
+					text: message
+				})
+			) {
+				shareObject = {
+					...shareObject,
+					text: message
+				};
 			}
+			navigator
+				.share(shareObject)
+				.then(() => {
+					createToast('Successfully shared!');
+					console.log('Share was successful.');
+				})
+				.catch((error) => {
+					createToast('Something went wrong during sharing', true);
+					console.log('Sharing failed', error);
+				});
 		} else {
 			//Copy to clipboard
 
