@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>3D Minesweeper</title>
+	<title>3D Minesweeper - Play Minesweeper in a new dimension</title>
 </svelte:head>
 <Toast />
 <AppShell>
