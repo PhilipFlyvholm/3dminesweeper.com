@@ -13,6 +13,12 @@
 
 	import { storePopup } from '@skeletonlabs/skeleton';
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
+	//Vercel Analytics
+	import { dev } from '$app/environment';
+	import { inject } from '@vercel/analytics';
+
+	inject({ mode: dev ? 'development' : 'production' });
 </script>
 
 <svelte:head>
@@ -24,18 +30,19 @@
 	<slot />
 	<svelte:fragment slot="pageFooter"><Footer /></svelte:fragment>
 </AppShell>
+
 <style>
-	:global(h1, .vt323){
+	:global(h1, .vt323) {
 		font-family: 'VT323', 'Alegreya Sans', sans-serif;
 		text-shadow: 2px 2px 0px #744aa1, 3px 3px 0px #744aa1;
 	}
 
-	:global(h2,h3){
+	:global(h2, h3) {
 		font-weight: bold;
-		margin: 1rem 0 .25rem 0;
+		margin: 1rem 0 0.25rem 0;
 	}
-	:global(strong){
+	:global(strong) {
 		display: block;
-		margin: 1rem 0 .25rem 0;
+		margin: 1rem 0 0.25rem 0;
 	}
 </style>
