@@ -10,7 +10,7 @@
 	};
 </script>
 
-<button class="btn variant-soft w-48 justify-between" use:popup={popupCombobox}>
+<button class="btn variant-soft justify-between" use:popup={popupCombobox}>
 	<span class="capitalize">New game</span>
 	<span>↓</span>
 </button>

@@ -237,18 +237,28 @@
 			$gameStore.image = dataUrl;
 		}
 	});
+	let dist = 0;
+	$: {
+		if (width !== undefined || height !== undefined || depth !== undefined) {
+			dist = Math.max(width, height, depth) / (2 * Math.tan((24 * Math.PI) / 360));
+			console.log(width, height, depth, dist);
+		}
+	}
 </script>
 
 <InteractiveScene>
 	<T.Cache enabled={true} />
-	<T.PerspectiveCamera makeDefault position={[width * 3, height * 3, depth * 3]} fov={24}>
+	<T.PerspectiveCamera
+		makeDefault
+		position={[dist,dist,dist]}
+	>
 		<OrbitControls
 			enablePan={false}
 			enableZoom={true}
 			enableRotate={true}
 			autoRotate={!isPlaying}
-			minDistance={Math.max(width, height, depth) * 2 + 5}
-			maxDistance={Math.max(width, height, depth) * 2 + 100}
+			minDistance={Math.max(width, height, depth) + 5}
+			maxDistance={Math.max(width, height, depth)*3 + dist}
 			target={[width / 2 - 0.5, height / 2 - 0.5, depth / 2 - 0.5]}
 			on:start={handlePanStart}
 			on:end={handlePanEnd}

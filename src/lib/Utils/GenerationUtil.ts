@@ -18,21 +18,27 @@ export function calculate3BV(cube: Block[][][]) {
 	const isMarked = (x: number, y: number, z: number) => marked[x]?.[y]?.[z] ?? false;
 	const isEmpty = (x: number, y: number, z: number) => getBombsAround(x, y, z, cube) === 0;
 
-	const floodFillMark = (x: number, y: number, z: number) => {
-		for (let deltaX = -1; deltaX <= 1; deltaX++) {
-			for (let deltaY = -1; deltaY <= 1; deltaY++) {
-				for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
-					if (deltaX === 0 && deltaY === 0 && deltaZ === 0) continue;
-					const finalX = x + deltaX;
-					const finalY = y + deltaY;
-					const finalZ = z + deltaZ;
-					if (!cube[finalX]?.[finalY]?.[finalZ]) continue; //If it is not in the cube
-
-					if (isMarked(finalX, finalY, finalZ)) continue;
-
-					mark(finalX, finalY, finalZ);
-					if (isEmpty(finalX, finalY, finalZ)) {
-						floodFillMark(finalX, finalY, finalZ);
+	const floodFillMark = (initalX: number, initalY: number, initalZ: number) => {
+		const localQueue = [{x:initalZ, y:initalY, z:initalZ}]
+		while(localQueue.length > 0){
+			const head = localQueue.pop()
+			if(!head) continue
+			const {x,y,z} = head
+			for (let deltaX = -1; deltaX <= 1; deltaX++) {
+				for (let deltaY = -1; deltaY <= 1; deltaY++) {
+					for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
+						if (deltaX === 0 && deltaY === 0 && deltaZ === 0) continue;
+						const finalX = x + deltaX;
+						const finalY = y + deltaY;
+						const finalZ = z + deltaZ;
+						if (!cube[finalX]?.[finalY]?.[finalZ]) continue; //If it is not in the cube
+	
+						if (isMarked(finalX, finalY, finalZ)) continue;
+	
+						mark(finalX, finalY, finalZ);
+						if (isEmpty(finalX, finalY, finalZ)) {
+							localQueue.push({x:finalX, y:finalY, z:finalZ})
+						}
 					}
 				}
 			}

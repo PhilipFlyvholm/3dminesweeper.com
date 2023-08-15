@@ -70,7 +70,7 @@
 		$scale = 1;
 	}}
 >
-	<T.BoxGeometry />
+	<T.BoxGeometry args={[1,1,1]}/>
 	{#if $blockTexture && $blockTexture !== undefined}
 		<T.MeshBasicMaterial map={$blockTexture} />
 	{/if}

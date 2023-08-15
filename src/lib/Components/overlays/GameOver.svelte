@@ -57,11 +57,6 @@
 		}`;
 
 		const message = `I just played 3D Minesweeper and cleared a ${$gameStore.size.width}x${$gameStore.size.height}x${$gameStore.size.depth} in ${timeString}!`;
-		console.log(
-			navigator.canShare,
-			navigator.canShare({ title: 'test', text: 'test', url: 'test' })
-		);
-
 		if (navigator.canShare) {
 			console.log('Sharing');
 
@@ -118,8 +113,13 @@
 			console.log('Copying to clipboard');
 			const url = `https://3dminesweeper.com/play/${$gameStore.size.width}x${$gameStore.size.height}x${$gameStore.size.depth}`;
 			const string = message + ` Try to beat me at ${url}`;
-			navigator.clipboard.writeText(string);
-			createToast('Copied to clipboard!');
+			if(navigator.clipboard){
+				navigator.clipboard.writeText(string);
+				createToast('Copied to clipboard!');
+			}else{
+				createToast('Failed to copy to clipboard', true)
+			}
+				
 		}
 	}
 </script>
