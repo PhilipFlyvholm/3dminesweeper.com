@@ -25,5 +25,5 @@ type gameStoreType = {
     isGameWon: false;
 })
 
-const gameStore = writable<gameStoreType>();
-export default gameStore;
+export const gameStore = writable<gameStoreType>();
+export const mouse = writable<{x:number, y:number} | undefined>(undefined)

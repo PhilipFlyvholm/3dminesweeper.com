@@ -1,5 +1,5 @@
 <script lang="ts">
-	import gameStore from '$lib/Stores/GameStore';
+	import {gameStore} from '$lib/Stores/GameStore';
 	import { getModel } from '$lib/Models';
 	import { getTexture } from '$lib/Textures';
 	import { isTouchDevice } from '$lib/Utils/DeviceUtil';
@@ -8,12 +8,9 @@
 	import { spring } from 'svelte/motion';
 	import { writable, type Writable } from 'svelte/store';
 	import type { Group, Mesh, Texture } from 'three';
+	import type {BoxClick} from '$lib/Types/BlockTypes'
 
-	export let clickCallback: (
-		pos: { x: number; y: number; z: number },
-		clickType: 'left' | 'right',
-		ref: Mesh
-	) => void = () => {};
+	export let clickCallback: BoxClick = () => {};
 	export let updateRef: (
 		position: { x: number; y: number; z: number },
 		ref: Mesh
@@ -54,12 +51,10 @@
 	position={[position.x, position.y, position.z]}
 	bind:ref={mesh}
 	on:click={(e) => {
-		if ($isMoving !== 'none') return;
-		clickCallback(position, 'left', mesh);
+		clickCallback(position, 'left', mesh, e.nativeEvent.clientX, e.nativeEvent.clientY);
 	}}
 	on:contextmenu={(e) => {
-		if ($isMoving !== 'none') return;
-		clickCallback(position, 'right', mesh);
+		clickCallback(position, 'right', mesh, e.nativeEvent.clientX, e.nativeEvent.clientY);
 	}}
 	on:pointerenter={() => {
 		if ($isMoving !== 'none' || isTouch) return;

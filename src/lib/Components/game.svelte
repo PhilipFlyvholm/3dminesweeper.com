@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
-	import gameStore from '$lib/Stores/GameStore';
+	import {gameStore,mouse} from '$lib/Stores/GameStore';
 	import type { Block } from '$lib/Types/GameTypes';
 	import { createCube, getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { onMount } from 'svelte';
@@ -12,7 +12,7 @@
 	import { fade } from 'svelte/transition';
 	import { DefaultLoadingManager } from 'three';
 	import Loading from './Loading.svelte';
-	import { Canvas, type ThrelteContext } from '@threlte/core';
+	import { Canvas } from '@threlte/core';
 
 	export let width = 5;
 	export let height = 5;
@@ -44,7 +44,7 @@
 			isGameWon: false,
 			clicks: 0,
 			threeBV: generation.difficulty,
-			size: { width, height, depth },
+			size: { width, height, depth }
 		};
 	}
 
@@ -84,9 +84,12 @@
 	}, 1000);
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="gameScreen relative h-full w-full">
 	<div
 		class="canvasContainer absolute h-full w-full bg-gradient-radial to-[rgb(var(--color-surface-900))] from-[rgb(var(--color-primary-500))]"
+		on:mousedown={(e) => $mouse = {x: e.clientX, y: e.clientY}}
+		on:touchstart={(e) => $mouse = {x: e.touches[0].clientX, y: e.touches[0].clientY}}
 	>
 		{#if $gameStore}
 			{#key $gameStore.gameId}
@@ -102,7 +105,7 @@
 				{/if}
 
 				<Canvas>
-					<GameScene bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
+					<GameScene bind:estimatedBombsRemaining {cube} {updateTime} {currentTool}/>
 				</Canvas>
 			{/key}
 		{/if}

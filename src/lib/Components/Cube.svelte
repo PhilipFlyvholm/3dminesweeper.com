@@ -4,13 +4,10 @@
 	import { T } from '@threlte/core';
 	import type { Writable } from 'svelte/store';
 	import Box from './box.svelte';
+	import type { BoxClick } from '$lib/Types/BlockTypes';
 	export let cube: Block[][][];
 	export let getTextureForBlock: (x: number, y: number, z: number) => string | undefined;
-	export let handleClick: (
-		pos: { x: number; y: number; z: number },
-		clickType: 'left' | 'right',
-		ref: Mesh
-	) => void;
+	export let handleClick: BoxClick;
 	export let updateRef: (position: { x: number; y: number; z: number }, ref: Mesh) => void;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import gameStore from '$lib/Stores/GameStore';
+	import {gameStore,mouse} from '$lib/Stores/GameStore';
 	import { OrbitControls } from '@threlte/extras';
 	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
 	import { T, useRender, useThrelte } from '@threlte/core';
@@ -98,9 +98,17 @@
 	async function handleClick(
 		pos: { x: number; y: number; z: number },
 		clickType: 'left' | 'right',
-		ref: Mesh
+		ref: Mesh,
+		clientX: number,
+		clientY: number
 	) {
-		if ($isMoving !== 'none') return;
+		if($mouse){
+			const xDiff = clientX-$mouse.x
+			const yDiff = clientY-$mouse.y
+			const totalDiff = Math.abs(xDiff)+Math.abs(yDiff)
+			console.log(totalDiff);
+			if(totalDiff > 1) return
+		}
 		const block = cube[pos.x][pos.y][pos.z];
 		if (block.type === 'air') return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;

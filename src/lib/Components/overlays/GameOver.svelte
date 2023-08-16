@@ -1,7 +1,6 @@
 <script lang="ts">
-	import gameStore from '$lib/Stores/GameStore';
+	import {gameStore} from '$lib/Stores/GameStore';
 	import { toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
-	import { useRender } from '@threlte/core';
 	export let restart = () => {};
 	let timeDiffInSeconds = 0;
 	let prettyDate = '';
