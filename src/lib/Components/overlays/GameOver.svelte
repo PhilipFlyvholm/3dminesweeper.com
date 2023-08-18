@@ -1,6 +1,8 @@
 <script lang="ts">
 	import {gameStore} from '$lib/Stores/GameStore';
+	import { imageStore } from '$lib/Stores/ImageStore';
 	import { toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
+	import { onDestroy, onMount } from 'svelte';
 	export let restart = () => {};
 	let timeDiffInSeconds = 0;
 	let prettyDate = '';
@@ -59,7 +61,7 @@
 		if (navigator.canShare) {
 			console.log('Sharing');
 
-			const file = $gameStore.image ? dataURLtoFile($gameStore.image, '3dminesweeper.png') : null;
+			const file = $imageStore.gameOverImage !== '' ? dataURLtoFile($imageStore.gameOverImage, '3dminesweeper.png') : null;
 			const title = '3D Minesweeper';
 			const url = 'https://3dminesweeper.com';
 			let shareObject: {
@@ -121,6 +123,22 @@
 				
 		}
 	}
+
+	let frameId: number = 0;
+	let showcaseTimeout: NodeJS.Timer | null = null;
+	onMount(() => {
+		if($imageStore.showcaseMode){
+			showcaseTimeout = setInterval(() => {
+			 	frameId = (frameId + 1) % $imageStore.showcaseImages.length;
+			}, 500);
+		}
+	})
+	onDestroy(() => {
+		if(showcaseTimeout){
+			clearInterval(showcaseTimeout);
+		}
+	})
+
 </script>
 
 {#if $gameStore && $gameStore.isGameOver}
@@ -128,11 +146,14 @@
 	<div
 		class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] card py-5 px-10 rounded w-[90%] sm:w-[50%] flex flex-col"
 	>
+		{#if $imageStore.showcaseImages.length > 0}
+			<img style="height:20rem; width:20rem;" src={$imageStore.showcaseImages[frameId]} alt="" />
+		{/if}
 		<div class="flex items-center justify-center mb-4">
 			<h1 class="h1 text-center">
 				{text}
 			</h1>
-			<img style="height:3rem; width:auto;" src={$gameStore.image} alt="" />
+			<img style="height:3rem; width:auto;" src={$imageStore.gameOverImage} alt="" />
 		</div>
 		{#if $gameStore.bombs > 0}
 			<p class="card variant-soft-error mb-4 text-center flex justify-between py-2 px-4">

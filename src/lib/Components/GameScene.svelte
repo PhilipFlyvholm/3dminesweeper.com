@@ -9,6 +9,7 @@
 	import type { Block } from '$lib/Types/GameTypes';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import Cube from './Cube.svelte';
+	import { imageStore, takeImage} from '$lib/Stores/ImageStore';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
@@ -235,14 +236,19 @@
 			}, dragEndDelay);
 		}
 	}
-	let dataUrl = '';
+
+	let lastImageTime = 0;
 	useRender(({ camera, renderer, scene }, delta) => {
 		if (!renderer) return;
 		renderer.render(scene, camera.current);
-		if ($gameStore && $gameStore.isGameOver && dataUrl === '') {
-			const canvas = document.getElementsByTagName('canvas')[0];
-			dataUrl = canvas.toDataURL('image/png', 1.0);
-			$gameStore.image = dataUrl;
+		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
+			takeImage(true)
+		}else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
+			if (Date.now() - lastImageTime > 1000){
+				console.log("Taking image")
+				takeImage(false)
+				lastImageTime = Date.now()
+			}
 		}
 	});
 	let dist = 0;

@@ -1,17 +1,19 @@
 <script>
-	import VideoLink from '$lib/Components/frontpage/videoLink.svelte';
+	import PlayButton from '$lib/Components/frontpage/PlayButton.svelte';
 </script>
 
-<section class="card variant-ghost-primary p-5 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">
+<section class=" my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">
 	<h1 class="h1 text-center p-0 vt323">3D Minesweeper</h1>
 	<p class="text-center font-bold my-5">Select a difficulty</p>
-	<div class="flex flex-wrap justify-between w-full">
-		<VideoLink sources={['/videos/3x3x3/output.webm','/videos/3x3x3/output.mp4']} poster="/videos/3x3x3/output.jpeg" href="/play/3x3x3" text="3x3x3" />
-		<VideoLink sources={['/videos/5x5x5/output.webm','/videos/5x5x5/output.mp4']} poster="/videos/5x5x5/output.jpeg" href="/play/5x5x5" text="5x5x5" />
-		<VideoLink sources={['/videos/10x10x10/output.webm', '/videos/10x10x10/output.mp4']} poster="/videos/10x10x10/output.jpeg" href="/play/10x10x10" text="10x10x10" />
+	<div class="flex flex-wrap justify-between w-full my-5">
+		<PlayButton size={"3x3x3"} text="Beginner (3x3x3)"/>
+		<PlayButton size={"5x5x5"} text="Intermediate (5x5x5)" />
+		<PlayButton size={"10x10x10"} text="Expert (10x10x10)" />
 	</div>
 </section>
-<section class="card variant-ghost-primary py-5 px-5 md:px-10 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">
+<section
+	class="card variant-ghost-primary py-5 px-5 md:px-10 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto"
+>
 	<h2 class="h2 text-center">How to play 3D Minesweeper</h2>
 	<p class="md:text-center">
 		Welcome to the exciting world of 3D Minesweeper! This guide will walk you through the rules and
@@ -121,5 +123,3 @@
 		</li>
 	</ol>
 </section>
-
-

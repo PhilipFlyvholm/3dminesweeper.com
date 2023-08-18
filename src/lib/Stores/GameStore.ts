@@ -19,7 +19,6 @@ type gameStoreType = {
     isGameWon: boolean;
     endTime: number;
     bombs: number;
-    image?: string;
 } | {
     isGameOver: false;
     isGameWon: false;

@@ -13,6 +13,9 @@
 	import { DefaultLoadingManager } from 'three';
 	import Loading from './Loading.svelte';
 	import { Canvas } from '@threlte/core';
+	import { imageStore } from '$lib/Stores/ImageStore';
+	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
+	import { tutorialSeen } from '$lib/Stores/LocalStorage';
 
 	export let width = 5;
 	export let height = 5;
@@ -22,6 +25,7 @@
 	let cube: Block[][][] = [];
 	let timePlayed = 0;
 	let timeout: string | number | NodeJS.Timeout | undefined;
+	let mounted = false
 
 	async function updateTime() {
 		if (timeout) clearTimeout(timeout);
@@ -46,10 +50,12 @@
 			threeBV: generation.difficulty,
 			size: { width, height, depth }
 		};
+		$imageStore = {...$imageStore, showcaseImages: []}
 	}
 
 	onMount(() => {
 		init();
+		mounted = true
 	});
 	const progress = writable(0);
 	const tweenedProgress = tweened($progress, {
@@ -136,6 +142,9 @@
 		{new Date(timePlayed).toISOString().substring(11, 19)}
 	</DataOverlay>
 	<GameOver restart={() => init()} />
+	{#if mounted && $tutorialSeen === 'false'}
+		<TutorialOverlay />
+	{/if}
 </div>
 
 <style>
