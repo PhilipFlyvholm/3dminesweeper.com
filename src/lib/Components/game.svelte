@@ -3,7 +3,7 @@
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
 	import {gameStore,mouse} from '$lib/Stores/GameStore';
 	import type { Block } from '$lib/Types/GameTypes';
-	import { createCube, getBombsAround } from '$lib/Utils/GenerationUtil';
+	import { createCube } from '$lib/Utils/GenerationUtil';
 	import { onMount } from 'svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
 	import GameScene from './GameScene.svelte';
@@ -88,6 +88,8 @@
 			$progress = 1;
 		}
 	}, 1000);
+
+	let isMoving = writable<'click' | 'drag' | 'none'>('none');
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -111,7 +113,7 @@
 				{/if}
 
 				<Canvas>
-					<GameScene bind:estimatedBombsRemaining {cube} {updateTime} {currentTool}/>
+					<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool}/>
 				</Canvas>
 			{/key}
 		{/if}
@@ -141,7 +143,7 @@
 		>
 		{new Date(timePlayed).toISOString().substring(11, 19)}
 	</DataOverlay>
-	<GameOver restart={() => init()} />
+	<GameOver restart={() => init()} {isMoving} />
 	{#if mounted && $tutorialSeen === 'false'}
 		<TutorialOverlay />
 	{/if}

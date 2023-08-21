@@ -3,7 +3,12 @@
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
+	import type { Writable } from 'svelte/store';
+	import { fade } from 'svelte/transition';
+
 	export let restart = () => {};
+	export let isMoving: Writable<"click" | "drag" | "none">;
+	
 	let timeDiffInSeconds = 0;
 	let prettyDate = '';
 	$: {
@@ -144,7 +149,9 @@
 {#if $gameStore && $gameStore.isGameOver}
 	{@const text = $gameStore.isGameWon ? 'BOMBS DEFUSED!' : 'GAME OVER!'}
 	<div
-		class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] card py-5 px-10 rounded w-[90%] sm:w-[50%] flex flex-col"
+		transition:fade={{ duration: 300 }}
+		class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] card py-5 px-10 rounded w-[90%] sm:w-[50%] flex flex-col transition-opacity"
+		style="opacity: {$isMoving === 'none' ? 1 : 0}"
 	>
 		{#if $imageStore.showcaseImages.length > 0}
 			<img style="height:20rem; width:20rem;" src={$imageStore.showcaseImages[frameId]} alt="" />

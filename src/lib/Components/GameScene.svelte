@@ -3,7 +3,7 @@
 	import { OrbitControls } from '@threlte/extras';
 	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
 	import { T, useRender, useThrelte } from '@threlte/core';
-	import { writable } from 'svelte/store';
+	import type { Writable } from 'svelte/store';
 	import { Mesh, MeshBasicMaterial } from 'three';
 	import { getTexture } from '$lib/Textures';
 	import type { Block } from '$lib/Types/GameTypes';
@@ -13,8 +13,8 @@
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
-	let cubeRefs: Mesh[][][] = [];
 	export let estimatedBombsRemaining: number;
+	let cubeRefs: Mesh[][][] = [];
 	export let cube: Block[][][];
 	$: width = cube.length;
 	$: height = cube[0].length;
@@ -60,6 +60,7 @@
 		}
 		return bombs;
 	}
+
 	function showSweeped(win: boolean) {
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
@@ -114,6 +115,13 @@
 		if (block.type === 'air') return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
 		if ($gameStore.startTime === null) {
+			//First click
+			if (block.type === 'bomb') {
+				// Shift the cube
+				
+			}
+			
+
 			$gameStore.startTime = Date.now();
 			updateTime();
 		}
@@ -187,6 +195,7 @@
 
 		cubeRefs[position.x][position.y][position.z] = ref;
 	}
+
 	function getTextureForBlock(x: number, y: number, z: number) {
 		const block = cube[x][y][z];
 
@@ -199,6 +208,7 @@
 			if (bombsAround === 0 || bombsAround > 8) return 'block_open_air';
 			return `block_open_${bombsAround}`;
 		}
+		//if(block.type === 'bomb') return 'block_bomb'
 
 		return 'block_default';
 	}
@@ -210,7 +220,7 @@
 		invalidate();
 	}
 
-	let isMoving = writable<'click' | 'drag' | 'none'>('none');
+	export let isMoving: Writable<"click" | "drag" | "none">;
 	let isPlaying = false;
 	$: isPlaying = $gameStore ? $gameStore.isPlaying : false;
 
