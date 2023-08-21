@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Block } from '$lib/Types/GameTypes';
 	import type { Mesh } from 'three';
 	import { T } from '@threlte/core';
 	import type { Writable } from 'svelte/store';
 	import Box from './box.svelte';
 	import type { BoxClick } from '$lib/Types/BlockTypes';
+	import type { Block } from '$lib/Cube';
 	export let cube: Block[][][];
 	export let getTextureForBlock: (x: number, y: number, z: number) => string | undefined;
 	export let handleClick: BoxClick;
@@ -24,7 +24,7 @@
 						{texture}
 						{updateRef}
 						{isMoving}
-						isFlagged={box.isFlagged}
+						bind:isFlagged={box.isFlagged}
 						facing={box.facing}
 					/>
 				{/if}

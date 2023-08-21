@@ -44,6 +44,7 @@
 	isMoving.subscribe(() => {
 		if ($isMoving && $scale !== 1) $scale = 1;
 	});
+	
 </script>
 
 <T.Mesh

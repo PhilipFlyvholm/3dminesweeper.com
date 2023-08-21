@@ -1,31 +1,30 @@
 <script lang="ts">
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
-	import {gameStore,mouse} from '$lib/Stores/GameStore';
-	import type { Block } from '$lib/Types/GameTypes';
-	import { createCube } from '$lib/Utils/GenerationUtil';
+	import { Cube } from '$lib/Cube';
+	import { gameStore, mouse } from '$lib/Stores/GameStore';
+	import { imageStore } from '$lib/Stores/ImageStore';
+	import { tutorialSeen } from '$lib/Stores/LocalStorage';
+	import { Canvas } from '@threlte/core';
 	import { onMount } from 'svelte';
-	import DataOverlay from './overlays/DataOverlay.svelte';
-	import GameScene from './GameScene.svelte';
 	import { tweened } from 'svelte/motion';
 	import { writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import { DefaultLoadingManager } from 'three';
+	import GameScene from './GameScene.svelte';
 	import Loading from './Loading.svelte';
-	import { Canvas } from '@threlte/core';
-	import { imageStore } from '$lib/Stores/ImageStore';
+	import DataOverlay from './overlays/DataOverlay.svelte';
 	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
-	import { tutorialSeen } from '$lib/Stores/LocalStorage';
 
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
 	let currentTool: 'shovel' | 'flag' = 'shovel';
 	let estimatedBombsRemaining = 0;
-	let cube: Block[][][] = [];
+	let cube: Cube;
 	let timePlayed = 0;
 	let timeout: string | number | NodeJS.Timeout | undefined;
-	let mounted = false
+	let mounted = false;
 
 	async function updateTime() {
 		if (timeout) clearTimeout(timeout);
@@ -37,9 +36,10 @@
 	function init() {
 		timePlayed = 0;
 		currentTool = 'shovel';
-		const generation = createCube(width, height, depth);
-		cube = generation.cube;
-		estimatedBombsRemaining = generation.estimatedBombsRemaining;
+
+		cube = new Cube(width, height, depth);
+
+		estimatedBombsRemaining = cube.bombs;
 		$gameStore = {
 			gameId: Math.random().toString(36).substring(7),
 			isGameOver: false,
@@ -47,15 +47,15 @@
 			startTime: null,
 			isGameWon: false,
 			clicks: 0,
-			threeBV: generation.difficulty,
+			threeBV: cube.difficulty,
 			size: { width, height, depth }
 		};
-		$imageStore = {...$imageStore, showcaseImages: []}
+		$imageStore = { ...$imageStore, showcaseImages: [] };
 	}
 
 	onMount(() => {
 		init();
-		mounted = true
+		mounted = true;
 	});
 	const progress = writable(0);
 	const tweenedProgress = tweened($progress, {
@@ -96,8 +96,8 @@
 <div class="gameScreen relative h-full w-full">
 	<div
 		class="canvasContainer absolute h-full w-full bg-gradient-radial to-[rgb(var(--color-surface-900))] from-[rgb(var(--color-primary-500))]"
-		on:mousedown={(e) => $mouse = {x: e.clientX, y: e.clientY}}
-		on:touchstart={(e) => $mouse = {x: e.touches[0].clientX, y: e.touches[0].clientY}}
+		on:mousedown={(e) => ($mouse = { x: e.clientX, y: e.clientY })}
+		on:touchstart={(e) => ($mouse = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
 	>
 		{#if $gameStore}
 			{#key $gameStore.gameId}
@@ -113,7 +113,7 @@
 				{/if}
 
 				<Canvas>
-					<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool}/>
+					<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
 				</Canvas>
 			{/key}
 		{/if}

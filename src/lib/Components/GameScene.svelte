@@ -1,31 +1,32 @@
 <script lang="ts">
-	import {gameStore,mouse} from '$lib/Stores/GameStore';
-	import { OrbitControls } from '@threlte/extras';
 	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
+	import type { Block, Cube as CubeType } from '$lib/Cube';
+	import { gameStore, mouse } from '$lib/Stores/GameStore';
+	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
+	import { getTexture } from '$lib/Textures';
+	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { T, useRender, useThrelte } from '@threlte/core';
+	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
 	import { Mesh, MeshBasicMaterial } from 'three';
-	import { getTexture } from '$lib/Textures';
-	import type { Block } from '$lib/Types/GameTypes';
-	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import Cube from './Cube.svelte';
-	import { imageStore, takeImage} from '$lib/Stores/ImageStore';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
 	export let estimatedBombsRemaining: number;
 	let cubeRefs: Mesh[][][] = [];
-	export let cube: Block[][][];
-	$: width = cube.length;
-	$: height = cube[0].length;
-	$: depth = cube[0][0].length;
+	export let cube: CubeType;
+	$: width = cube.getWidth();
+	$: height = cube.getHeight();
+	$: depth = cube.getDepth();
 	const { invalidate } = useThrelte();
 
 	function isComplete() {
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
-					const block = cube[x][y][z];
+					const block = cube.getBlock(x, y, z);
+					if(!block) continue;
 					if (block.type === 'bomb' && block.isSweeped) return false;
 					if (block.type === 'block' && !block.isSweeped) return false;
 				}
@@ -53,7 +54,8 @@
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
-					const block = cube[x][y][z];
+					const block = cube.getBlock(x, y, z);
+					if(!block) continue;
 					if (block.type === 'bomb' && (!ignoreFlagged || !block.isFlagged)) bombs++;
 				}
 			}
@@ -65,7 +67,8 @@
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
-					const block = cube[x][y][z];
+					const block = cube.getBlock(x, y, z);
+					if(!block) continue;
 					if (block.type == 'air' || block.isSweeped) continue;
 					if (block.isFlagged) {
 						if (block.type === 'bomb') continue;
@@ -97,6 +100,10 @@
 		showSweeped(false);
 	}
 
+	let shiftX = 0,
+		shiftY = 0,
+		shiftZ = 0;
+
 	async function handleClick(
 		pos: { x: number; y: number; z: number },
 		clickType: 'left' | 'right',
@@ -104,23 +111,45 @@
 		clientX: number,
 		clientY: number
 	) {
-		if($mouse){
-			const xDiff = clientX-$mouse.x
-			const yDiff = clientY-$mouse.y
-			const totalDiff = Math.abs(xDiff)+Math.abs(yDiff)
-			console.log(totalDiff);
-			if(totalDiff > 1) return
+		if ($mouse) {
+			const xDiff = clientX - $mouse.x;
+			const yDiff = clientY - $mouse.y;
+			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);
+			if (totalDiff > 1) return;
 		}
-		const block = cube[pos.x][pos.y][pos.z];
+		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		if (!block) return;
 		if (block.type === 'air') return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
 		if ($gameStore.startTime === null) {
 			//First click
-			if (block.type === 'bomb') {
-				// Shift the cube
-				
-			}
-			
+			/*if (block.type === 'bomb') {
+				//Go around the block until we find a non-bomb block and non-air block
+				let foundBlock = false;
+				let deltaPos = pos;
+				for (let deltaX = -1; deltaX <= 1; deltaX++) {
+					for (let deltaY = -1; deltaY <= 1; deltaY++) {
+						for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
+							if (deltaX === 0 && deltaY === 0 && deltaZ === 0) continue;
+							const block = cube.getBlock(
+								deltaPos.x + deltaX,
+								deltaPos.y + deltaY,
+								deltaPos.z + deltaZ
+							);
+							if (!block) continue;
+							if (block.type === 'bomb') continue;
+							if (block.type === 'air') continue;
+							foundBlock = true;
+							shiftX = pos.x - deltaPos.x + deltaX;
+							shiftY = pos.y - deltaPos.y + deltaY;
+							shiftZ = pos.z - deltaPos.z + deltaZ;
+							break;
+						}
+						if (foundBlock) break;
+					}
+					if (foundBlock) break;
+				}
+			}*/
 
 			$gameStore.startTime = Date.now();
 			updateTime();
@@ -128,7 +157,6 @@
 		if (clickType === 'left' && currentTool === 'shovel') {
 			//Left click
 			if (block.type === 'bomb') {
-				console.log('You clicked a bomb!');
 				updateTextureAsync(pos.x, pos.y, pos.z, ref);
 				gameOver();
 				return;
@@ -151,7 +179,7 @@
 			}
 			$gameStore.clicks++;
 		}
-		cube[pos.x][pos.y][pos.z] = block;
+		cube = cube.setBlock(pos.x, pos.y, pos.z, block);
 		updateTextureAsync(pos.x, pos.y, pos.z, ref);
 
 		checkWin();
@@ -160,7 +188,7 @@
 	function cascadeEmptyBlocks(x: number, y: number, z: number) {
 		let update: Block[] = [];
 
-		const bombsAround = getBombsAround(x, y, z, cube);
+		const bombsAround = getBombsAround(x, y, z, cube.cube);
 		if (bombsAround !== 0) return;
 		for (let deltaX = -1; deltaX <= 1; deltaX++) {
 			for (let deltaY = -1; deltaY <= 1; deltaY++) {
@@ -172,7 +200,7 @@
 					if (finalX < 0 || finalX >= width) continue;
 					if (finalY < 0 || finalY >= height) continue;
 					if (finalZ < 0 || finalZ >= depth) continue;
-					const block = cube[finalX][finalY][finalZ];
+					const block = cube.getBlock(finalX, finalY, finalZ);
 					if (!block) continue;
 					if (block.type === 'air') continue;
 					if (block.type === 'bomb') continue;
@@ -197,13 +225,13 @@
 	}
 
 	function getTextureForBlock(x: number, y: number, z: number) {
-		const block = cube[x][y][z];
-
+		const block = cube.getBlock(x,y,z);
+		if (!block) return;
 		if (block.type === 'air') return;
 		if (block.isFlagged) return 'block_flag';
 		if (block.isSweeped) {
 			if (block.type === 'bomb') return 'block_bomb_exploded';
-			const bombsAround = getBombsAround(x, y, z, cube);
+			const bombsAround = getBombsAround(x, y, z, cube.cube);
 
 			if (bombsAround === 0 || bombsAround > 8) return 'block_open_air';
 			return `block_open_${bombsAround}`;
@@ -220,7 +248,7 @@
 		invalidate();
 	}
 
-	export let isMoving: Writable<"click" | "drag" | "none">;
+	export let isMoving: Writable<'click' | 'drag' | 'none'>;
 	let isPlaying = false;
 	$: isPlaying = $gameStore ? $gameStore.isPlaying : false;
 
@@ -252,12 +280,12 @@
 		if (!renderer) return;
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
-			takeImage(true)
-		}else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
-			if (Date.now() - lastImageTime > 1000){
-				console.log("Taking image")
-				takeImage(false)
-				lastImageTime = Date.now()
+			takeImage(true);
+		} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
+			if (Date.now() - lastImageTime > 1000) {
+				console.log('Taking image');
+				takeImage(false);
+				lastImageTime = Date.now();
 			}
 		}
 	});
@@ -265,24 +293,20 @@
 	$: {
 		if (width !== undefined || height !== undefined || depth !== undefined) {
 			dist = Math.max(width, height, depth) / (2 * Math.tan((24 * Math.PI) / 360));
-			console.log(width, height, depth, dist);
 		}
 	}
 </script>
 
 <InteractiveScene>
 	<T.Cache enabled={true} />
-	<T.PerspectiveCamera
-		makeDefault
-		position={[dist,dist,dist]}
-	>
+	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]}>
 		<OrbitControls
 			enablePan={false}
 			enableZoom={true}
 			enableRotate={true}
 			autoRotate={!isPlaying}
 			minDistance={Math.max(width, height, depth) + 5}
-			maxDistance={Math.max(width, height, depth)*3 + dist}
+			maxDistance={Math.max(width, height, depth) * 3 + dist}
 			target={[width / 2 - 0.5, height / 2 - 0.5, depth / 2 - 0.5]}
 			on:start={handlePanStart}
 			on:end={handlePanEnd}
@@ -292,5 +316,5 @@
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
 	<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
-	<Cube {cube} {getTextureForBlock} {updateRef} {handleClick} {isMoving} />
+	<Cube bind:cube={cube.cube} {getTextureForBlock} {updateRef} {handleClick} {isMoving} />
 </InteractiveScene>

@@ -1,10 +1,11 @@
-import type { Block, Cube } from '$lib/Types/GameTypes';
+import type { Block, Cube } from "$lib/Cube";
+
 
 /*
-    Count3BV is a function that calculate the 3BV of a cube
-    3BV is the minimum number of clicks required to open all the cells
-    3BV is a measure of the difficulty of a cube
-    A cube is a 3D array of blocks (Block[][][]) where air blocks can be ignored
+	Count3BV is a function that calculate the 3BV of a cube
+	3BV is the minimum number of clicks required to open all the cells
+	3BV is a measure of the difficulty of a cube
+	A cube is a 3D array of blocks (Block[][][]) where air blocks can be ignored
 */
 export function calculate3BV(cube: Block[][][]) {
 	let count = 0;
@@ -19,11 +20,11 @@ export function calculate3BV(cube: Block[][][]) {
 	const isEmpty = (x: number, y: number, z: number) => getBombsAround(x, y, z, cube) === 0;
 
 	const floodFillMark = (initalX: number, initalY: number, initalZ: number) => {
-		const localQueue = [{x:initalZ, y:initalY, z:initalZ}]
-		while(localQueue.length > 0){
+		const localQueue = [{ x: initalZ, y: initalY, z: initalZ }]
+		while (localQueue.length > 0) {
 			const head = localQueue.pop()
-			if(!head) continue
-			const {x,y,z} = head
+			if (!head) continue
+			const { x, y, z } = head
 			for (let deltaX = -1; deltaX <= 1; deltaX++) {
 				for (let deltaY = -1; deltaY <= 1; deltaY++) {
 					for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
@@ -32,12 +33,12 @@ export function calculate3BV(cube: Block[][][]) {
 						const finalY = y + deltaY;
 						const finalZ = z + deltaZ;
 						if (!cube[finalX]?.[finalY]?.[finalZ]) continue; //If it is not in the cube
-	
+
 						if (isMarked(finalX, finalY, finalZ)) continue;
-	
+
 						mark(finalX, finalY, finalZ);
 						if (isEmpty(finalX, finalY, finalZ)) {
-							localQueue.push({x:finalX, y:finalY, z:finalZ})
+							localQueue.push({ x: finalX, y: finalY, z: finalZ })
 						}
 					}
 				}
@@ -106,20 +107,17 @@ export function createCube(
 	width: number,
 	height: number,
 	depth: number,
+	bombsAmount: number,
 	iteration = 0
-): { cube: Cube; difficulty: number; estimatedBombsRemaining: number } {
+): { cube: Block[][][]; difficulty: number; estimatedBombsRemaining: number } {
 	let estimatedBombsRemaining = 0;
-	const totalAmount =
-		width * height * depth -
-		Math.max(width - 2, 0) * Math.max(height - 2, 0) * Math.max(depth - 2, 0);
 
-	const totalBombs = Math.max(Math.floor(totalAmount / 10), 1);
 	const bombLocs: { x: number; y: number; z: number }[] = [];
 	function isOutline(x: number, y: number, z: number) {
 		return x === 0 || x === width - 1 || y === 0 || y === height - 1 || z === 0 || z === depth - 1;
 	}
 
-	for (let i = 0; i < totalBombs; i++) {
+	for (let i = 0; i < bombsAmount; i++) {
 		let x = Math.floor(Math.random() * width);
 		let y = Math.floor(Math.random() * height);
 		let z = Math.floor(Math.random() * depth);
@@ -134,7 +132,7 @@ export function createCube(
 		bombLocs.push({ x, y, z });
 	}
 
-	const cube: Cube = [];
+	const cube: Block[][][] = [];
 	for (let x = 0; x < width; x++) {
 		cube[x] = [];
 		for (let y = 0; y < height; y++) {
@@ -186,7 +184,7 @@ export function createCube(
 	}
 	const difficulty = calculate3BV(cube);
 
-	if (difficulty < totalBombs + 3 && iteration < 50)
-		return createCube(width, height, depth, iteration + 1);
+	if (difficulty < bombsAmount + 3 && iteration < 50)
+		return createCube(width, height, depth, bombsAmount, iteration + 1);
 	return { cube, difficulty, estimatedBombsRemaining };
 }
