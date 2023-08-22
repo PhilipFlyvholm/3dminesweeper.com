@@ -1,4 +1,4 @@
-import { createCube } from "./Utils/GenerationUtil";
+import { addBombs, createPlainCube } from "./Utils/GenerationUtil";
 
 export type Block =
     | {
@@ -20,22 +20,21 @@ export type Block =
 export class Cube {
     cube: Block[][][];
     bombs: number;
-    difficulty: number;
+    difficulty?: number;
     size: { 
         width: number;
         height: number;
         depth: number;
     }
+    difficultyListeners: ((difficulty: number) => void)[] = [];
 
     constructor(width: number, height: number, depth: number) {
         const blockAmount =
             width * height * depth -
             Math.max(width - 2, 0) * Math.max(height - 2, 0) * Math.max(depth - 2, 0);
-        const bombsAmount = Math.max(Math.floor(blockAmount / 10), 1);
-        const cubeCreation = createCube(width, height, depth, bombsAmount);
-        this.cube = cubeCreation.cube;
-        this.bombs = cubeCreation.estimatedBombsRemaining;
-        this.difficulty = cubeCreation.difficulty;
+        this.bombs = Math.max(Math.floor(blockAmount / 10), 1);
+        this.cube = createPlainCube(width, height, depth);
+        
         this.size = {
             width,
             height,
@@ -69,5 +68,22 @@ export class Cube {
         if (z < 0 || z >= this.size.depth) return this;
         this.cube[x][y][z] = block;
         return this
+    }
+
+    populate(firstClick:{x:number,y:number,z:number}) {
+        const {cube, difficulty, seed, estimatedBombsRemaining} = addBombs(this.cube, firstClick, this.bombs);
+        this.cube = cube;
+        this.difficulty = difficulty;
+        this.bombs = estimatedBombsRemaining;
+        this.difficultyListeners.forEach(listener => listener(difficulty));
+        return this;
+    }
+
+    addDifficultyChangeListener(listener: (difficulty: number) => void) {
+        let i = this.difficultyListeners.push(listener);
+        return () => {
+            this.difficultyListeners.splice(i, 1);
+        }
+
     }
 }

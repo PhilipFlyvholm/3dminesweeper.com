@@ -100,9 +100,6 @@
 		showSweeped(false);
 	}
 
-	let shiftX = 0,
-		shiftY = 0,
-		shiftZ = 0;
 
 	async function handleClick(
 		pos: { x: number; y: number; z: number },
@@ -123,34 +120,8 @@
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
 		if ($gameStore.startTime === null) {
 			//First click
-			/*if (block.type === 'bomb') {
-				//Go around the block until we find a non-bomb block and non-air block
-				let foundBlock = false;
-				let deltaPos = pos;
-				for (let deltaX = -1; deltaX <= 1; deltaX++) {
-					for (let deltaY = -1; deltaY <= 1; deltaY++) {
-						for (let deltaZ = -1; deltaZ <= 1; deltaZ++) {
-							if (deltaX === 0 && deltaY === 0 && deltaZ === 0) continue;
-							const block = cube.getBlock(
-								deltaPos.x + deltaX,
-								deltaPos.y + deltaY,
-								deltaPos.z + deltaZ
-							);
-							if (!block) continue;
-							if (block.type === 'bomb') continue;
-							if (block.type === 'air') continue;
-							foundBlock = true;
-							shiftX = pos.x - deltaPos.x + deltaX;
-							shiftY = pos.y - deltaPos.y + deltaY;
-							shiftZ = pos.z - deltaPos.z + deltaZ;
-							break;
-						}
-						if (foundBlock) break;
-					}
-					if (foundBlock) break;
-				}
-			}*/
-
+			cube = cube.populate(pos);
+			
 			$gameStore.startTime = Date.now();
 			updateTime();
 		}

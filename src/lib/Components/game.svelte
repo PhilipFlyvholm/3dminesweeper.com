@@ -6,7 +6,7 @@
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { tutorialSeen } from '$lib/Stores/LocalStorage';
 	import { Canvas } from '@threlte/core';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { tweened } from 'svelte/motion';
 	import { writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
@@ -25,6 +25,7 @@
 	let timePlayed = 0;
 	let timeout: string | number | NodeJS.Timeout | undefined;
 	let mounted = false;
+	let destroyListener: () => void = () => {};
 
 	async function updateTime() {
 		if (timeout) clearTimeout(timeout);
@@ -47,9 +48,12 @@
 			startTime: null,
 			isGameWon: false,
 			clicks: 0,
-			threeBV: cube.difficulty,
+			threeBV: cube.difficulty || 0,
 			size: { width, height, depth }
 		};
+		destroyListener = cube.addDifficultyChangeListener((difficulty) => {
+			$gameStore = { ...$gameStore, threeBV: difficulty };
+		});
 		$imageStore = { ...$imageStore, showcaseImages: [] };
 	}
 
@@ -57,10 +61,14 @@
 		init();
 		mounted = true;
 	});
+	onDestroy(() => {
+		destroyListener();
+	});
 	const progress = writable(0);
 	const tweenedProgress = tweened($progress, {
 		duration: 200
 	});
+
 	let loadingStarted = false;
 	$: tweenedProgress.set($progress);
 	DefaultLoadingManager.onStart = function () {

@@ -1,6 +1,7 @@
-import type { Block, Cube } from "$lib/Cube";
+import type { Block } from "$lib/Cube";
+import Srand from 'seeded-rand';
 
-
+const rnd = new Srand(10);
 /*
 	Count3BV is a function that calculate the 3BV of a cube
 	3BV is the minimum number of clicks required to open all the cells
@@ -103,43 +104,20 @@ export function getBombsAround(x: number, y: number, z: number, cube: Block[][][
 	return bombs;
 }
 
-export function createCube(
+
+/**This creates a cube with no core and no bombs */
+export function createPlainCube(
 	width: number,
 	height: number,
 	depth: number,
-	bombsAmount: number,
-	iteration = 0
-): { cube: Block[][][]; difficulty: number; estimatedBombsRemaining: number } {
-	let estimatedBombsRemaining = 0;
-
-	const bombLocs: { x: number; y: number; z: number }[] = [];
-	function isOutline(x: number, y: number, z: number) {
-		return x === 0 || x === width - 1 || y === 0 || y === height - 1 || z === 0 || z === depth - 1;
-	}
-
-	for (let i = 0; i < bombsAmount; i++) {
-		let x = Math.floor(Math.random() * width);
-		let y = Math.floor(Math.random() * height);
-		let z = Math.floor(Math.random() * depth);
-		while (
-			bombLocs.find((loc) => loc.x === x && loc.y === y && loc.z === z) ||
-			!isOutline(x, y, z)
-		) {
-			x = Math.floor(Math.random() * width);
-			y = Math.floor(Math.random() * height);
-			z = Math.floor(Math.random() * depth);
-		}
-		bombLocs.push({ x, y, z });
-	}
-
+): Block[][][] {
 	const cube: Block[][][] = [];
 	for (let x = 0; x < width; x++) {
 		cube[x] = [];
 		for (let y = 0; y < height; y++) {
 			cube[x][y] = [];
 			for (let z = 0; z < depth; z++) {
-				//Set outline to true and center to false
-				if (isOutline(x, y, z)) {
+				if (isOutline(x, y, z, width, height, depth)) {
 					const facing = (() => {
 						if (x === 0) return 'left';
 						else if (x === width - 1) return 'right';
@@ -148,29 +126,16 @@ export function createCube(
 						else if (z === 0) return 'front';
 						else return 'back';
 					})();
-					const isBomb = bombLocs.find((loc) => loc.x === x && loc.y === y && loc.z === z);
-					if (isBomb) {
-						estimatedBombsRemaining++;
-						cube[x][y][z] = {
-							x,
-							y,
-							z,
-							type: 'bomb',
-							isFlagged: false,
-							isSweeped: false,
-							facing: facing
-						};
-					} else {
-						cube[x][y][z] = {
-							x,
-							y,
-							z,
-							type: 'block',
-							isFlagged: false,
-							isSweeped: false,
-							facing: facing
-						};
-					}
+
+					cube[x][y][z] = {
+						x,
+						y,
+						z,
+						type: 'block',
+						isFlagged: false,
+						isSweeped: false,
+						facing: facing
+					};
 				} else {
 					cube[x][y][z] = {
 						x,
@@ -182,9 +147,49 @@ export function createCube(
 			}
 		}
 	}
+	return cube;
+}
+function isOutline(x: number, y: number, z: number, width: number, height: number, depth: number) {
+	return x === 0 || x === width - 1 || y === 0 || y === height - 1 || z === 0 || z === depth - 1;
+}
+
+export function addBombs(initalCube: Block[][][], firstClick: { x: number, y: number, z: number }, bombsAmount: number, seed?: number, iteration = 0) {
+	const cube = JSON.parse(JSON.stringify(initalCube)) as Block[][][];
+	const width = cube.length;
+	const height = cube[0].length;
+	const depth = cube[0][0].length;
+	const seededRandom = new Srand(seed);
+	let estimatedBombsRemaining = 0;
+	const bombLocs: { x: number; y: number; z: number }[] = [];
+
+	for (let i = 0; i < bombsAmount; i++) {
+		let x = Math.floor(seededRandom.random() * width);
+		let y = Math.floor(seededRandom.random() * height);
+		let z = Math.floor(seededRandom.random() * depth);
+		while (
+			bombLocs.find((loc) => loc.x === x && loc.y === y && loc.z === z) ||
+			!isOutline(x, y, z, width, height, depth) ||
+			(x === firstClick.x && y === firstClick.y && z === firstClick.z)
+		) {
+			x = Math.floor(seededRandom.random() * width);
+			y = Math.floor(seededRandom.random() * height);
+			z = Math.floor(seededRandom.random() * depth);
+		}
+		let block = cube[x][y][z];
+		if (block.type === 'block') {
+			cube[x][y][z] = {
+				...block,
+				type: 'bomb',
+			};
+			estimatedBombsRemaining++;
+		} else {
+			i--;
+		}
+	}
 	const difficulty = calculate3BV(cube);
 
 	if (difficulty < bombsAmount + 3 && iteration < 50)
-		return createCube(width, height, depth, bombsAmount, iteration + 1);
-	return { cube, difficulty, estimatedBombsRemaining };
+		return addBombs(initalCube, firstClick, bombsAmount, seed !== undefined ? seed + 1 : undefined, iteration + 1);
+	return { cube, difficulty, estimatedBombsRemaining, seed: seededRandom.seed };
+
 }
