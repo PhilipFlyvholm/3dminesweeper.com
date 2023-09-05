@@ -4,6 +4,7 @@
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
 	import { getTexture } from '$lib/Textures';
+	import type { BoxClick } from '$lib/Types/BlockTypes';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { T, useRender, useThrelte } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
@@ -26,7 +27,7 @@
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
 					const block = cube.getBlock(x, y, z);
-					if(!block) continue;
+					if (!block) continue;
 					if (block.type === 'bomb' && block.isSweeped) return false;
 					if (block.type === 'block' && !block.isSweeped) return false;
 				}
@@ -55,7 +56,7 @@
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
 					const block = cube.getBlock(x, y, z);
-					if(!block) continue;
+					if (!block) continue;
 					if (block.type === 'bomb' && (!ignoreFlagged || !block.isFlagged)) bombs++;
 				}
 			}
@@ -68,7 +69,7 @@
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
 					const block = cube.getBlock(x, y, z);
-					if(!block) continue;
+					if (!block) continue;
 					if (block.type == 'air' || block.isSweeped) continue;
 					if (block.isFlagged) {
 						if (block.type === 'bomb') continue;
@@ -100,6 +101,55 @@
 		showSweeped(false);
 	}
 
+	async function handleChording(
+		pos: { x: number; y: number; z: number },
+		clickType: 'left' | 'right',
+		ref: Mesh,
+		block: Block
+	) {
+		/*Chording can only happen if:
+		 *	- Current block is sweeped
+		 *	- The amount of flags adjactent is EQUAL to the amount of bombs adjactent
+		 */
+		if (block.type !== 'block') return;
+		if (!block.isSweeped) return;
+		const toUpdate: Block[] = [];
+		let flags = 0;
+		let bombs = 0;
+
+		for (let x = -1; x <= 1; x++) {
+			for (let y = -1; y <= 1; y++) {
+				for (let z = -1; z <= 1; z++) {
+					if (x === 0 && y === 0 && z === 0) continue;
+					const finalX = pos.x + x;
+					const finalY = pos.y + y;
+					const finalZ = pos.z + z;
+					const localBlock = cube.getBlock(finalX, finalY, finalZ);
+					if (!localBlock || localBlock.type === 'air') continue;
+					if (localBlock.type === 'bomb') {
+						bombs++;
+					}
+					if (localBlock.isFlagged) {
+						flags++;
+					}
+
+					toUpdate.push(localBlock);
+				}
+			}
+		}
+		if (flags !== bombs) return;
+
+		$gameStore.clicks++;
+		for (const block of toUpdate) {
+			if (block.type === 'air') continue;
+			block.isSweeped = true;
+			cascadeEmptyBlocks(block.x, block.y, block.z);
+			cube = cube.setBlock(block.x, block.y, block.z, block);
+
+			updateTextureAsync(block.x, block.y, block.z, ref);
+		}
+		checkWin();
+	}
 
 	async function handleClick(
 		pos: { x: number; y: number; z: number },
@@ -121,7 +171,7 @@
 		if ($gameStore.startTime === null) {
 			//First click
 			cube = cube.populate(pos);
-			
+
 			$gameStore.startTime = Date.now();
 			updateTime();
 		}
@@ -133,7 +183,10 @@
 				return;
 			}
 			if (block.isFlagged) return;
-			if (block.isSweeped) return;
+			if (block.isSweeped) {
+				handleChording(pos, clickType, ref, block);
+				return;
+			}
 			$gameStore.clicks++;
 			block.isSweeped = true;
 			cascadeEmptyBlocks(pos.x, pos.y, pos.z);
@@ -154,6 +207,45 @@
 		updateTextureAsync(pos.x, pos.y, pos.z, ref);
 
 		checkWin();
+	}
+	let preReveal: { x: number; y: number; z: number }[] = [];
+
+	function clearPreReveal() {
+		while (preReveal.length !== 0) {
+			const pos = preReveal.pop();
+			if (pos) updateTextureAsync(pos.x, pos.y, pos.z);
+		}
+	}
+
+	function handlePointerDown(pos: { x: number; y: number; z: number }) {
+		const block = cube.getBlock(pos.x, pos.y, pos.z);
+
+		if (!block || block.type === 'air') return;
+		if (block.type === 'block') {
+			if (block.isFlagged) return;
+			if (block.isSweeped && currentTool === 'shovel') {
+				//add all adjactent blocks to prereveal
+				for (let x = -1; x <= 1; x++) {
+					for (let y = -1; y <= 1; y++) {
+						for (let z = -1; z <= 1; z++) {
+							if (x === 0 && y === 0 && z === 0) continue;
+							const finalX = pos.x + x;
+							const finalY = pos.y + y;
+							const finalZ = pos.z + z;
+
+							preReveal.push({ x: finalX, y: finalY, z: finalZ });
+						}
+					}
+				}
+			} else {
+				preReveal.push(pos);
+			}
+		} else if (block.type === 'bomb') {
+			preReveal.push(pos);
+		}
+		for (const pos of preReveal) {
+			updateTextureAsync(pos.x, pos.y, pos.z);
+		}
 	}
 
 	function cascadeEmptyBlocks(x: number, y: number, z: number) {
@@ -196,7 +288,7 @@
 	}
 
 	function getTextureForBlock(x: number, y: number, z: number) {
-		const block = cube.getBlock(x,y,z);
+		const block = cube.getBlock(x, y, z);
 		if (!block) return;
 		if (block.type === 'air') return;
 		if (block.isFlagged) return 'block_flag';
@@ -207,11 +299,18 @@
 			if (bombsAround === 0 || bombsAround > 8) return 'block_open_air';
 			return `block_open_${bombsAround}`;
 		}
+
+		if (preReveal.find((e) => e.x === x && e.y === y && e.z === z)) {
+			return currentTool === 'shovel' ? 'block_open_air' : 'block_flag';
+		}
+
 		//if(block.type === 'bomb') return 'block_bomb'
 
 		return 'block_default';
 	}
-	async function updateTextureAsync(x: number, y: number, z: number, ref: Mesh) {
+	async function updateTextureAsync(x: number, y: number, z: number, ref?: Mesh) {
+		if (!ref) ref = ((cubeRefs[x] || [])[y] || [])[z];
+		if (!ref) return;
 		const newTexure = getTextureForBlock(x, y, z);
 		if (!newTexure) return;
 		const texture = await getTexture(newTexure);
@@ -244,6 +343,7 @@
 				if ($isMoving !== 'none') isMoving.set('none');
 			}, dragEndDelay);
 		}
+		clearPreReveal();
 	}
 
 	let lastImageTime = 0;
@@ -287,5 +387,12 @@
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
 	<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
-	<Cube bind:cube={cube.cube} {getTextureForBlock} {updateRef} {handleClick} {isMoving} />
+	<Cube
+		bind:cube={cube.cube}
+		{getTextureForBlock}
+		{updateRef}
+		{handleClick}
+		{handlePointerDown}
+		{isMoving}
+	/>
 </InteractiveScene>

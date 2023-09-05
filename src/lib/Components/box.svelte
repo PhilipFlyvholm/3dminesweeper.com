@@ -8,9 +8,10 @@
 	import { spring } from 'svelte/motion';
 	import { writable, type Writable } from 'svelte/store';
 	import type { Group, Mesh, Texture } from 'three';
-	import type {BoxClick} from '$lib/Types/BlockTypes'
+	import type {BoxClick, BoxPointerDown} from '$lib/Types/BlockTypes'
 
 	export let clickCallback: BoxClick = () => {};
+	export let pointerDownCallback: BoxPointerDown = () => {};
 	export let updateRef: (
 		position: { x: number; y: number; z: number },
 		ref: Mesh
@@ -51,6 +52,12 @@
 	scale={$scale}
 	position={[position.x, position.y, position.z]}
 	bind:ref={mesh}
+	
+	on:pointerdown={(e) => {
+		if(e.nativeEvent.button !== 0)	return;
+		pointerDownCallback(position);
+	}}
+
 	on:click={(e) => {
 		clickCallback(position, 'left', mesh, e.nativeEvent.clientX, e.nativeEvent.clientY);
 	}}
