@@ -3,11 +3,12 @@
 	import { T } from '@threlte/core';
 	import type { Writable } from 'svelte/store';
 	import Box from './box.svelte';
-	import type { BoxClick } from '$lib/Types/BlockTypes';
+	import type { BoxClick, BoxPointerDown } from '$lib/Types/BlockTypes';
 	import type { Block } from '$lib/Cube';
 	export let cube: Block[][][];
 	export let getTextureForBlock: (x: number, y: number, z: number) => string | undefined;
 	export let handleClick: BoxClick;
+	export let handlePointerDown: BoxPointerDown;
 	export let updateRef: (position: { x: number; y: number; z: number }, ref: Mesh) => void;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
 </script>
@@ -21,6 +22,7 @@
 					<Box
 						position={{ x, y, z }}
 						clickCallback={handleClick}
+						pointerDownCallback={handlePointerDown}
 						{texture}
 						{updateRef}
 						{isMoving}

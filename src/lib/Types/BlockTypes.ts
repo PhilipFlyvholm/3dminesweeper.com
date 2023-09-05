@@ -7,3 +7,7 @@ export type BoxClick =(
     clientX: number,
     clientY: number
 ) => void
+
+export type BoxPointerDown = (
+    pos: { x: number; y: number; z: number }
+) => void
