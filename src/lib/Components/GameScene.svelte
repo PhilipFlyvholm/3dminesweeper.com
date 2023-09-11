@@ -82,6 +82,7 @@
 				}
 			}
 		}
+		invalidateCube();
 	}
 
 	function gameOver() {
@@ -140,24 +141,29 @@
 				gameOver();
 			}
 		}
+		invalidateCube();
 		checkWin();
 	}
 
-	async function handleClick(
-		pos: { x: number; y: number; z: number },
-		clickType: 'left' | 'right',
-		clientX: number,
-		clientY: number
-	) {
-		//clearPreReveal();
-		console.log('Click', pos);
-
+	function isValidMouseMove(clientX: number, clientY: number) {
 		if ($mouse) {
 			const xDiff = clientX - $mouse.x;
 			const yDiff = clientY - $mouse.y;
 			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);
-			if (totalDiff > 1) return;
+			if (totalDiff > 1) return false;
 		}
+		return true;
+	}
+
+	async function handleLeftClick(
+		pos: { x: number; y: number; z: number },
+		clientX: number,
+		clientY: number
+	) {
+		//if($isMoving === 'drag') return;
+		console.log('LClick', pos);
+
+		if (!isValidMouseMove(clientX, clientY)) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
 		if (block.type === 'air') return;
@@ -169,64 +175,79 @@
 			$gameStore.startTime = Date.now();
 			updateTime();
 		}
-		if (clickType === 'left' && currentTool === 'shovel') {
-			//Left click
-			if (block.isFlagged) return;
-			if (block.type === 'bomb') {
-				block.isSweeped = true;
-				updateTexture(block);
-				gameOver();
-				return;
-			}
-			if (block.isSweeped) {
-				return handleChording(pos, block);
-			}
-
-			$gameStore.clicks++;
-			block.isSweeped = true;
-			cascadeEmptyBlocks(pos.x, pos.y, pos.z);
-			checkWin();
-		} else {
-			//Right click
-			if (block.isSweeped) return;
-			if (block.isFlagged) {
-				block.isFlagged = false;
-				estimatedBombsRemaining++;
-			} else {
-				block.isFlagged = true;
-				estimatedBombsRemaining--;
-			}
-			$gameStore.clicks++;
+		if (currentTool === 'flag') {
+			return handleRightClick(pos, clientX, clientY);
 		}
+		//Left click
+		if (block.isFlagged) return;
+		if (block.type === 'bomb') {
+			block.isSweeped = true;
+			updateTexture(block);
+			gameOver();
+			return;
+		}
+		if (block.isSweeped) {
+			return handleChording(pos, block);
+		}
+
+		$gameStore.clicks++;
+		block.isSweeped = true;
+		cascadeEmptyBlocks(pos.x, pos.y, pos.z);
+		checkWin();
 		cube.setBlock(pos.x, pos.y, pos.z, block);
 
 		updateTexture(block);
-
+		invalidateCube();
 		checkWin();
 	}
+
+	function handleRightClick(
+		pos: { x: number; y: number; z: number },
+		clientX: number,
+		clientY: number
+	) {
+		if (!isValidMouseMove(clientX, clientY)) return;
+		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		if (!block) return;
+		if (block.type === 'air') return;
+		if (block.isSweeped) return;
+		if (block.isFlagged) {
+			block.isFlagged = false;
+			estimatedBombsRemaining++;
+		} else {
+			block.isFlagged = true;
+			estimatedBombsRemaining--;
+		}
+		$gameStore.clicks++;
+		cube.setBlock(pos.x, pos.y, pos.z, block);
+
+		updateTexture(block);
+		invalidateCube();
+	}
+
 	let preReveal: { x: number; y: number; z: number }[] = [];
 
 	function clearPreReveal() {
+		console.log('Clearing', preReveal.length);
 		while (preReveal.length !== 0) {
-			console.log('Clearing');
 			const pos = preReveal.pop();
 			if (!pos) continue;
 			const block = cube.getBlock(pos.x, pos.y, pos.z);
-			if (block) {
+			if (block && block.type !== 'air') {
 				updateTexture(block);
 				cube = cube.setBlock(pos.x, pos.y, pos.z, block);
 			}
 		}
+		invalidateCube();
 	}
 
-	async function handlePointerDown(
-		pos: { x: number; y: number; z: number }
-	) {
-		return;
+	async function handlePointerDown(pos: { x: number; y: number; z: number }) {
+		const tmpPreReveal: { x: number; y: number; z: number }[] = [];
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		console.log('Pointer down', pos);
 
 		if (!block || block.type === 'air') return;
+
 		if (block.type === 'block') {
 			if (block.isFlagged) return;
 			if (block.isSweeped && currentTool === 'shovel') {
@@ -239,20 +260,26 @@
 							const finalY = pos.y + y;
 							const finalZ = pos.z + z;
 
-							preReveal.push({ x: finalX, y: finalY, z: finalZ });
+							tmpPreReveal.push({ x: finalX, y: finalY, z: finalZ });
 						}
 					}
 				}
 			} else {
-				preReveal.push(pos);
+				tmpPreReveal.push(pos);
 			}
 		} else if (block.type === 'bomb') {
-			preReveal.push(pos);
+			tmpPreReveal.push(pos);
 		}
-		for (const pos of preReveal) {
+		for (const pos of tmpPreReveal) {
 			const block = cube.getBlock(pos.x, pos.y, pos.z);
-			if (block) updateTexture(block);
+			if (!block || block.type === 'air') continue;
+			if(block.isSweeped) continue;
+			if(block.isFlagged) continue;
+			preReveal.push(pos);
+			updateTexture(block);
 		}
+
+		invalidateCube();
 	}
 
 	function cascadeEmptyBlocks(x: number, y: number, z: number) {
@@ -286,6 +313,7 @@
 		update.forEach((block) => {
 			cascadeEmptyBlocks(block.x, block.y, block.z);
 		});
+		invalidateCube();
 	}
 
 	function getTextureForBlock(block: Block) {
@@ -314,14 +342,16 @@
 	}
 
 	function updateTexture(block: Block) {
-		console.log("updating texture");
-		
 		if (block.type === 'air') return;
 		const newTexture = getTextureForBlock(block);
 		if (!newTexture) return;
 		block.texture = newTexture;
-		cube = cube.setBlock(block.x, block.y, block.z, block);
-		invalidate();
+		cube.setBlock(block.x, block.y, block.z, block);
+	}
+
+	function invalidateCube() {
+		cube = cube;
+		//invalidate();
 	}
 
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
@@ -332,7 +362,6 @@
 	const dragEndDelay = 100; //The amount of time to wait before stopping dragging
 	let stopDraggingTimeout: NodeJS.Timeout | undefined;
 	function handlePanStart() {
-		return;
 		isMoving.set('click');
 
 		setTimeout(async () => {
@@ -343,7 +372,6 @@
 	}
 
 	async function handlePanEnd() {
-		return;
 		if ($isMoving === 'click') {
 			isMoving.set('none');
 		} else {
@@ -395,5 +423,5 @@
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
 	<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
-	<Cube bind:cube={cube.cube} {handleClick} {handlePointerDown} {isMoving} />
+	<Cube bind:cube={cube.cube} {handleLeftClick} {handleRightClick} {handlePointerDown} {isMoving} />
 </InteractiveScene>

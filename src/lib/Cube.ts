@@ -18,6 +18,8 @@ export type Block =
         type: 'air';
     };
 
+export type NonAirBlock = Exclude<Block, { type: 'air' }>;
+
 export class Cube {
     cube: Block[][][];
     bombs: number;
