@@ -13,6 +13,7 @@ type gameStoreType = {
         width: number;
         height: number;
         depth: number;
+        blockAmount: number;
     }
 } & ({
     isGameOver: true;

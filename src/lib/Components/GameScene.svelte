@@ -3,25 +3,20 @@
 	import type { Block, Cube as CubeType } from '$lib/Cube';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
-	import { getTexture } from '$lib/Textures';
-	import type { BoxClick } from '$lib/Types/BlockTypes';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { T, useRender, useThrelte } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
-	import { Mesh, MeshBasicMaterial } from 'three';
-	import Cube from './Cube.svelte';
+	import Cube from './Cube/Cube.svelte';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
 	export let estimatedBombsRemaining: number;
-	let cubeRefs: Mesh[][][] = [];
 	export let cube: CubeType;
 	$: width = cube.getWidth();
 	$: height = cube.getHeight();
 	$: depth = cube.getDepth();
 	const { invalidate } = useThrelte();
-
 	function isComplete() {
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
@@ -83,7 +78,7 @@
 					} else {
 						block.isSweeped = true;
 					}
-					updateTextureAsync(x, y, z, cubeRefs[x][y][z]);
+					updateTexture(block);
 				}
 			}
 		}
@@ -101,16 +96,13 @@
 		showSweeped(false);
 	}
 
-	async function handleChording(
-		pos: { x: number; y: number; z: number },
-		clickType: 'left' | 'right',
-		ref: Mesh,
-		block: Block
-	) {
+	async function handleChording(pos: { x: number; y: number; z: number }, block: Block) {
 		/*Chording can only happen if:
 		 *	- Current block is sweeped
 		 *	- The amount of flags adjactent is EQUAL to the amount of bombs adjactent
 		 */
+		//console.log('Chord on', pos);
+
 		if (block.type !== 'block') return;
 		if (!block.isSweeped) return;
 		const toUpdate: Block[] = [];
@@ -120,7 +112,6 @@
 		for (let x = -1; x <= 1; x++) {
 			for (let y = -1; y <= 1; y++) {
 				for (let z = -1; z <= 1; z++) {
-					if (x === 0 && y === 0 && z === 0) continue;
 					const finalX = pos.x + x;
 					const finalY = pos.y + y;
 					const finalZ = pos.z + z;
@@ -131,9 +122,9 @@
 					}
 					if (localBlock.isFlagged) {
 						flags++;
+					} else {
+						toUpdate.push(localBlock);
 					}
-
-					toUpdate.push(localBlock);
 				}
 			}
 		}
@@ -143,10 +134,11 @@
 		for (const block of toUpdate) {
 			if (block.type === 'air') continue;
 			block.isSweeped = true;
-			cascadeEmptyBlocks(block.x, block.y, block.z);
-			cube = cube.setBlock(block.x, block.y, block.z, block);
-
-			updateTextureAsync(block.x, block.y, block.z, ref);
+			cube.setBlock(block.x, block.y, block.z, block);
+			updateTexture(block);
+			if (block.type === 'bomb' && !block.isFlagged) {
+				gameOver();
+			}
 		}
 		checkWin();
 	}
@@ -154,10 +146,12 @@
 	async function handleClick(
 		pos: { x: number; y: number; z: number },
 		clickType: 'left' | 'right',
-		ref: Mesh,
 		clientX: number,
 		clientY: number
 	) {
+		//clearPreReveal();
+		console.log('Click', pos);
+
 		if ($mouse) {
 			const xDiff = clientX - $mouse.x;
 			const yDiff = clientY - $mouse.y;
@@ -177,16 +171,17 @@
 		}
 		if (clickType === 'left' && currentTool === 'shovel') {
 			//Left click
+			if (block.isFlagged) return;
 			if (block.type === 'bomb') {
-				updateTextureAsync(pos.x, pos.y, pos.z, ref);
+				block.isSweeped = true;
+				updateTexture(block);
 				gameOver();
 				return;
 			}
-			if (block.isFlagged) return;
 			if (block.isSweeped) {
-				handleChording(pos, clickType, ref, block);
-				return;
+				return handleChording(pos, block);
 			}
+
 			$gameStore.clicks++;
 			block.isSweeped = true;
 			cascadeEmptyBlocks(pos.x, pos.y, pos.z);
@@ -203,8 +198,9 @@
 			}
 			$gameStore.clicks++;
 		}
-		cube = cube.setBlock(pos.x, pos.y, pos.z, block);
-		updateTextureAsync(pos.x, pos.y, pos.z, ref);
+		cube.setBlock(pos.x, pos.y, pos.z, block);
+
+		updateTexture(block);
 
 		checkWin();
 	}
@@ -212,13 +208,23 @@
 
 	function clearPreReveal() {
 		while (preReveal.length !== 0) {
+			console.log('Clearing');
 			const pos = preReveal.pop();
-			if (pos) updateTextureAsync(pos.x, pos.y, pos.z);
+			if (!pos) continue;
+			const block = cube.getBlock(pos.x, pos.y, pos.z);
+			if (block) {
+				updateTexture(block);
+				cube = cube.setBlock(pos.x, pos.y, pos.z, block);
+			}
 		}
 	}
 
-	function handlePointerDown(pos: { x: number; y: number; z: number }) {
+	async function handlePointerDown(
+		pos: { x: number; y: number; z: number }
+	) {
+		return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		console.log('Pointer down', pos);
 
 		if (!block || block.type === 'air') return;
 		if (block.type === 'block') {
@@ -244,7 +250,8 @@
 			preReveal.push(pos);
 		}
 		for (const pos of preReveal) {
-			updateTextureAsync(pos.x, pos.y, pos.z);
+			const block = cube.getBlock(pos.x, pos.y, pos.z);
+			if (block) updateTexture(block);
 		}
 	}
 
@@ -268,10 +275,11 @@
 					if (block.type === 'air') continue;
 					if (block.type === 'bomb') continue;
 					if (block.isSweeped) continue;
+					if (block.isFlagged) continue;
 
 					update.push(block);
 					block.isSweeped = true;
-					updateTextureAsync(finalX, finalY, finalZ, cubeRefs[finalX][finalY][finalZ]);
+					updateTexture(block);
 				}
 			}
 		}
@@ -280,23 +288,19 @@
 		});
 	}
 
-	function updateRef(position: { x: number; y: number; z: number }, ref: Mesh) {
-		if (!cubeRefs[position.x]) cubeRefs[position.x] = [];
-		if (!cubeRefs[position.x][position.y]) cubeRefs[position.x][position.y] = [];
-
-		cubeRefs[position.x][position.y][position.z] = ref;
-	}
-
-	function getTextureForBlock(x: number, y: number, z: number) {
-		const block = cube.getBlock(x, y, z);
+	function getTextureForBlock(block: Block) {
 		if (!block) return;
 		if (block.type === 'air') return;
 		if (block.isFlagged) return 'block_flag';
+		const { x, y, z } = block;
 		if (block.isSweeped) {
 			if (block.type === 'bomb') return 'block_bomb_exploded';
 			const bombsAround = getBombsAround(x, y, z, cube.cube);
 
-			if (bombsAround === 0 || bombsAround > 8) return 'block_open_air';
+			if (bombsAround === 0 || bombsAround > 8) {
+				return 'block_open_air';
+			}
+			//console.log('Bombs', x, y, z, `block_open_${bombsAround}`);
 			return `block_open_${bombsAround}`;
 		}
 
@@ -308,13 +312,15 @@
 
 		return 'block_default';
 	}
-	async function updateTextureAsync(x: number, y: number, z: number, ref?: Mesh) {
-		if (!ref) ref = ((cubeRefs[x] || [])[y] || [])[z];
-		if (!ref) return;
-		const newTexure = getTextureForBlock(x, y, z);
-		if (!newTexure) return;
-		const texture = await getTexture(newTexure);
-		ref.material = new MeshBasicMaterial({ map: texture });
+
+	function updateTexture(block: Block) {
+		console.log("updating texture");
+		
+		if (block.type === 'air') return;
+		const newTexture = getTextureForBlock(block);
+		if (!newTexture) return;
+		block.texture = newTexture;
+		cube = cube.setBlock(block.x, block.y, block.z, block);
 		invalidate();
 	}
 
@@ -326,6 +332,7 @@
 	const dragEndDelay = 100; //The amount of time to wait before stopping dragging
 	let stopDraggingTimeout: NodeJS.Timeout | undefined;
 	function handlePanStart() {
+		return;
 		isMoving.set('click');
 
 		setTimeout(async () => {
@@ -335,7 +342,8 @@
 		}, dragDelay);
 	}
 
-	function handlePanEnd() {
+	async function handlePanEnd() {
+		return;
 		if ($isMoving === 'click') {
 			isMoving.set('none');
 		} else {
@@ -387,12 +395,5 @@
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
 	<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
-	<Cube
-		bind:cube={cube.cube}
-		{getTextureForBlock}
-		{updateRef}
-		{handleClick}
-		{handlePointerDown}
-		{isMoving}
-	/>
+	<Cube bind:cube={cube.cube} {handleClick} {handlePointerDown} {isMoving} />
 </InteractiveScene>

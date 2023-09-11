@@ -8,6 +8,7 @@ export type Block =
         type: 'block' | 'bomb';
         isFlagged: boolean;
         isSweeped: boolean;
+        texture: string;
         facing: 'up' | 'down' | 'left' | 'right' | 'front' | 'back';
     }
     | {
@@ -25,6 +26,7 @@ export class Cube {
         width: number;
         height: number;
         depth: number;
+        blockAmount: number;
     }
     difficultyListeners: ((difficulty: number) => void)[] = [];
 
@@ -38,7 +40,8 @@ export class Cube {
         this.size = {
             width,
             height,
-            depth
+            depth,
+            blockAmount
         }
 
     }
@@ -71,7 +74,7 @@ export class Cube {
     }
 
     populate(firstClick:{x:number,y:number,z:number}) {
-        const {cube, difficulty, seed, estimatedBombsRemaining} = addBombs(this.cube, firstClick, this.bombs);
+        const {cube, difficulty, seed, estimatedBombsRemaining} = addBombs(this.cube, firstClick, this.bombs, 3);
         this.cube = cube;
         this.difficulty = difficulty;
         this.bombs = estimatedBombsRemaining;
@@ -80,7 +83,7 @@ export class Cube {
     }
 
     addDifficultyChangeListener(listener: (difficulty: number) => void) {
-        let i = this.difficultyListeners.push(listener);
+        const i = this.difficultyListeners.push(listener);
         return () => {
             this.difficultyListeners.splice(i, 1);
         }

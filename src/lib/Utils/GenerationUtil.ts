@@ -1,7 +1,6 @@
 import type { Block } from "$lib/Cube";
 import Srand from 'seeded-rand';
 
-const rnd = new Srand(10);
 /*
 	Count3BV is a function that calculate the 3BV of a cube
 	3BV is the minimum number of clicks required to open all the cells
@@ -134,7 +133,8 @@ export function createPlainCube(
 						type: 'block',
 						isFlagged: false,
 						isSweeped: false,
-						facing: facing
+						facing: facing,
+						texture: 'block_default',
 					};
 				} else {
 					cube[x][y][z] = {
@@ -175,7 +175,7 @@ export function addBombs(initalCube: Block[][][], firstClick: { x: number, y: nu
 			y = Math.floor(seededRandom.random() * height);
 			z = Math.floor(seededRandom.random() * depth);
 		}
-		let block = cube[x][y][z];
+		const block = cube[x][y][z];
 		if (block.type === 'block') {
 			cube[x][y][z] = {
 				...block,
