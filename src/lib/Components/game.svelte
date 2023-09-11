@@ -49,7 +49,7 @@
 			isGameWon: false,
 			clicks: 0,
 			threeBV: cube.difficulty || 0,
-			size: { width, height, depth }
+			size: cube.size
 		};
 		destroyListener = cube.addDifficultyChangeListener((difficulty) => {
 			$gameStore = { ...$gameStore, threeBV: difficulty };

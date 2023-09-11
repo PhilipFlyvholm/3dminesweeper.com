@@ -66,15 +66,14 @@ const texturePaths: {
 
 let loaded = false;
 let loading = false;
-const textures: Map<string, Texture> = new Map();
-
+let textures: Map<string, Texture> = new Map();
 async function loadTextures(): Promise<void> {
+	textures = new Map();
 	const textureLoader = useLoader(TextureLoader);
 	loading = true;
 	const loaders = texturePaths.map(({ name, path }) => {
 		return new Promise((resolve, reject) => {
-			textureLoader
-				.load(path)
+			textureLoader.load(path)
 				.then((blockTexture) => {
 					blockTexture.repeat.set(1, 1);
 					blockTexture.wrapS = blockTexture.wrapT = THREE.RepeatWrapping;
@@ -91,6 +90,11 @@ async function loadTextures(): Promise<void> {
 	await Promise.all(loaders);
 	loaded = true;
 	return Promise.resolve();
+}
+
+export async function loadTexturesIfUnloaded(){
+	if(!loading && !loaded) await loadTextures()
+	return textures;
 }
 
 export async function getTexture(name: string): Promise<Texture | undefined> {
@@ -112,3 +116,4 @@ export async function getTexture(name: string): Promise<Texture | undefined> {
 	}
 	return texture;
 }
+
