@@ -10,34 +10,28 @@
 	import type { Group, Texture } from 'three';
 	import { Instance } from '@threlte/extras';
 	import type { PositionMesh } from '@threlte/extras/dist/components/Instancing/PositionMesh';
+	import type {  NonAirBlock } from '$lib/Cube';
 
-	export let position = { x: 0, y: 0, z: 0 };
-	export let texture = 'block_default';
+	export let block: NonAirBlock;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
 	export let isFlagged: boolean;
-	export let facing: 'up' | 'down' | 'left' | 'right' | 'front' | 'back';
-	export let instanceId: string;
 	export let randomFlagRotation = 0;
 	const scale = spring(1);
 	const isTouch = isTouchDevice();
 	let mesh: PositionMesh;
 	let flag = writable<Group | null>(null);
-	let blockTexture = writable<Texture | undefined>(undefined);
-
+	$: position = {x: block.x, y: block.y, z: block.z};
+	$: instanceId = 'block-' + block.texture;
+	$: facing = block.facing;
 	onMount(async () => {
 		$flag = await getModel('flag');
-		$blockTexture = await getTexture(texture);
-	});
-
-	$: getTexture(texture).then((t) => {
-		blockTexture.set(t);
 	});
 
 	isMoving.subscribe(() => {
 		if ($isMoving && $scale !== 1) $scale = 1;
 	});
 </script>
-
+{#key instanceId}
 <Instance
 	id={instanceId}
 	scale={$scale}
@@ -52,6 +46,7 @@
 		$scale = 1;
 	}}
 />
+{/key}
 {#key isFlagged}
 	{#if isFlagged && $flag && $flag !== null}
 		{@const rotation = {
