@@ -8,6 +8,8 @@
 	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
 	import Cube from './Cube/Cube.svelte';
+	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
+	import { Vector3 } from 'three';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
@@ -383,11 +385,15 @@
 	}
 
 	let lastImageTime = 0;
+	const screenShake = new ScreenShake();
 	useRender(({ camera, renderer, scene }, delta) => {
 		if (!renderer) return;
+		screenShake.update(camera.current);
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
 			takeImage(true);
+			if(!screenShake.isActive()) screenShake.shake(camera.current, new Vector3(-.5,0,.5), 250)
+
 		} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
 			if (Date.now() - lastImageTime > 1000) {
 				console.log('Taking image');
@@ -395,6 +401,7 @@
 				lastImageTime = Date.now();
 			}
 		}
+		
 	});
 	let dist = 0;
 	$: {
