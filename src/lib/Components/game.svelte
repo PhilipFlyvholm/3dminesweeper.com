@@ -54,7 +54,7 @@
 		destroyListener = cube.addDifficultyChangeListener((difficulty) => {
 			$gameStore = { ...$gameStore, threeBV: difficulty };
 		});
-		$imageStore = { ...$imageStore, showcaseImages: [] };
+		$imageStore = { ...$imageStore, showcaseImages: [], gameOverImage: '' };
 	}
 
 	onMount(() => {
