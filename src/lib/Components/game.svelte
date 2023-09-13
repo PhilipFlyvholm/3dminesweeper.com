@@ -11,11 +11,11 @@
 	import { writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import { DefaultLoadingManager } from 'three';
+	import { dev } from '$app/environment';
 	import GameScene from './GameScene.svelte';
 	import Loading from './Loading.svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
 	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
-
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
@@ -98,8 +98,16 @@
 	}, 1000);
 
 	let isMoving = writable<'click' | 'drag' | 'none'>('none');
+
+	
+	function handleKeyPress(e: KeyboardEvent) {
+		if (e.key === 'r' && dev) {
+			init();
+		}
+	}
 </script>
 
+<svelte:window on:keypress={handleKeyPress}/>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="gameScreen relative h-full w-full">
 	<div

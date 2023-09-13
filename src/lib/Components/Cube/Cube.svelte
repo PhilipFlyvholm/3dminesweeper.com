@@ -32,31 +32,36 @@
 </script>
 
 <T.Group
-	on:click={(e) => {		
-		handleLeftClick(e.object.position, e.clientX, e.clientY);
-	}}
-	on:contextmenu={(e) => {
-		handleRightClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
+	on:pointerup={(e) => {
+		e.stopPropagation();
+		if (e.nativeEvent.button === 0) {
+			console.log(e);
+			
+			handleLeftClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
+		} else if (e.nativeEvent.button === 2) {
+			handleRightClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
+		}
 	}}
 	on:pointerdown={(e) => {
 		if (e.nativeEvent.button !== 0) return;
+		e.stopPropagation();
 		handlePointerDown(e.object.position);
 	}}
 >
 	{#await loadTexturesIfUnloaded() then textures}
 		{#if textures && textures.size !== 0}
 			<CubeInstances textures={convertMapToObjectArray(textures)}>
-					{#each cube as xAxes, x}
-						{#each xAxes as yAxes, y}
-							{#each yAxes as block, z}
-								{#if block.type !== 'air'}
-									{@const randomFlagRotation =
-										((x + y + z) / (cube.length + xAxes.length + yAxes.length)) * Math.PI * 2}
-									<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged} />
-								{/if}
-							{/each}
+				{#each cube as xAxes, x}
+					{#each xAxes as yAxes, y}
+						{#each yAxes as block, z}
+							{#if block.type !== 'air'}
+								{@const randomFlagRotation =
+									((x + y + z) / (cube.length + xAxes.length + yAxes.length)) * Math.PI * 2}
+								<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged} />
+							{/if}
 						{/each}
 					{/each}
+				{/each}
 			</CubeInstances>
 		{/if}
 	{/await}

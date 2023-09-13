@@ -142,6 +142,7 @@
 			if (block.type === 'bomb' && !block.isFlagged) {
 				gameOver();
 			}
+			cascadeEmptyBlocks(block.x, block.y, block.z);
 		}
 		invalidateCube();
 		checkWin();
@@ -152,7 +153,9 @@
 			const xDiff = clientX - $mouse.x;
 			const yDiff = clientY - $mouse.y;
 			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);
-			if (totalDiff > 1) return false;
+			console.log(totalDiff);
+			
+			if (totalDiff > 10) return false;
 		}
 		return true;
 	}
@@ -364,6 +367,8 @@
 	const dragEndDelay = 100; //The amount of time to wait before stopping dragging
 	let stopDraggingTimeout: NodeJS.Timeout | undefined;
 	function handlePanStart() {
+		console.log('Pan start');
+		
 		isMoving.set('click');
 
 		setTimeout(async () => {
@@ -374,6 +379,7 @@
 	}
 
 	async function handlePanEnd() {
+		console.log('Pan stop');
 		if ($isMoving === 'click') {
 			isMoving.set('none');
 		} else {
@@ -410,10 +416,9 @@
 		}
 	}
 </script>
-
 <InteractiveScene>
 	<T.Cache enabled={true} />
-	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]}>
+	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]} near={0.01} far={1000}>
 		<OrbitControls
 			enablePan={false}
 			enableZoom={true}
@@ -429,6 +434,5 @@
 	<T.DirectionalLight castShadow position={[3, 10, 10]} />
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
-	<T.Fog color={[214, 15, 15]} near={0.25} far={4} />
 	<Cube bind:cube={cube.cube} {handleLeftClick} {handleRightClick} {handlePointerDown} {isMoving} />
 </InteractiveScene>

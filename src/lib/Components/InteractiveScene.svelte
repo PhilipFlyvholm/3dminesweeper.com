@@ -5,7 +5,7 @@
 	 */
 	import { interactivity } from '@threlte/extras';
 	interactivity({
-		filter: (hits, state) => {
+		filter: (hits, state) => {			
 			// Only return the first hit
 			return hits.slice(0, 1);
 		}
