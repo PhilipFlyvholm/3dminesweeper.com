@@ -34,9 +34,7 @@
 <T.Group
 	on:pointerup={(e) => {
 		e.stopPropagation();
-		if (e.nativeEvent.button === 0) {
-			console.log(e);
-			
+		if (e.nativeEvent.button === 0) {			
 			handleLeftClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
 		} else if (e.nativeEvent.button === 2) {
 			handleRightClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
