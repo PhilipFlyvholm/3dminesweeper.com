@@ -152,9 +152,7 @@
 		if ($mouse) {
 			const xDiff = clientX - $mouse.x;
 			const yDiff = clientY - $mouse.y;
-			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);
-			console.log(totalDiff);
-			
+			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);			
 			if (totalDiff > 10) return false;
 		}
 		return true;
@@ -165,9 +163,6 @@
 		clientX: number,
 		clientY: number
 	) {
-		//if($isMoving === 'drag') return;
-		console.log('LClick', pos);
-
 		if (!isValidMouseMove(clientX, clientY)) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
@@ -233,7 +228,6 @@
 	let preReveal: { x: number; y: number; z: number }[] = [];
 
 	function clearPreReveal() {
-		console.log('Clearing', preReveal.length);
 		while (preReveal.length !== 0) {
 			const pos = preReveal.pop();
 			if (!pos) continue;
@@ -249,7 +243,6 @@
 	async function handlePointerDown(pos: { x: number; y: number; z: number }) {
 		const tmpPreReveal: { x: number; y: number; z: number }[] = [];
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
-		console.log('Pointer down', pos);
 
 		if (!block || block.type === 'air') return;
 
@@ -333,7 +326,6 @@
 			if (bombsAround === 0 || bombsAround > 8) {
 				return 'block_open_air';
 			}
-			//console.log('Bombs', x, y, z, `block_open_${bombsAround}`);
 			return `block_open_${bombsAround}`;
 		}
 
@@ -367,8 +359,6 @@
 	const dragEndDelay = 100; //The amount of time to wait before stopping dragging
 	let stopDraggingTimeout: NodeJS.Timeout | undefined;
 	function handlePanStart() {
-		console.log('Pan start');
-		
 		isMoving.set('click');
 
 		setTimeout(async () => {
@@ -379,7 +369,6 @@
 	}
 
 	async function handlePanEnd() {
-		console.log('Pan stop');
 		if ($isMoving === 'click') {
 			isMoving.set('none');
 		} else {
