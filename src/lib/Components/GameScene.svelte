@@ -392,7 +392,7 @@
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
 			takeImage(true);
-			if(!screenShake.isActive()) screenShake.shake(camera.current, new Vector3(-.5,0,.5), 250)
+			if(!screenShake.isActive() && !$gameStore.isGameWon) screenShake.shake(camera.current, new Vector3(-.5,0,.5), 250)
 
 		} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
 			if (Date.now() - lastImageTime > 1000) {

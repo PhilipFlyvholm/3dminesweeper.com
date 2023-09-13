@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { gameStore } from '$lib/Stores/GameStore';
 	import { getModel } from '$lib/Models';
-	import { getTexture } from '$lib/Textures';
 	import { isTouchDevice } from '$lib/Utils/DeviceUtil';
 	import { T, HierarchicalObject } from '@threlte/core';
 	import { onMount } from 'svelte';
 	import { spring } from 'svelte/motion';
 	import { writable, type Writable } from 'svelte/store';
-	import type { Group, Texture } from 'three';
+	import type { Group } from 'three';
 	import { Instance } from '@threlte/extras';
 	import type { PositionMesh } from '@threlte/extras/dist/components/Instancing/PositionMesh';
 	import type {  NonAirBlock } from '$lib/Cube';
