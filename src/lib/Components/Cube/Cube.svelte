@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Block } from '$lib/Cube';
-	import { gameStore } from '$lib/Stores/GameStore';
 	import { loadTexturesIfUnloaded } from '$lib/Textures';
 	import type { BoxLeftClick, BoxPointerDown, BoxRightClick } from '$lib/Types/BlockTypes';
 	import { T } from '@threlte/core';
