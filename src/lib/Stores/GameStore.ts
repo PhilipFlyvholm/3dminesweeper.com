@@ -1,6 +1,7 @@
+import type { UpdatedScores } from "$lib/Leaderboard";
 import { writable } from "svelte/store";
 
-type gameStoreType = {
+export type gameStoreType = {
     gameId: string;
     isPlaying: boolean;
     startTime: number | null;
@@ -20,6 +21,16 @@ type gameStoreType = {
     isGameWon: boolean;
     endTime: number;
     bombs: number;
+    score:{
+        updated: UpdatedScores;
+        current: {
+            clicks: number;
+            threeBV: number;
+            efficiency: number;
+            time: number;
+            threeBVPerSecond: number;
+        }
+    }
 } | {
     isGameOver: false;
     isGameWon: false;

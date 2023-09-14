@@ -1,14 +1,16 @@
 <script lang="ts">
-	import {gameStore} from '$lib/Stores/GameStore';
+	import { updated } from '$app/stores';
+	import { gameStore } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { share } from '$lib/Utils/ShareUtil';
 	import { onDestroy, onMount } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
+	import PbBagde from '../Badges/PBBagde.svelte';
 
 	export let restart = () => {};
-	export let isMoving: Writable<"click" | "drag" | "none">;
-	
+	export let isMoving: Writable<'click' | 'drag' | 'none'>;
+
 	let timeDiffInSeconds = 0;
 	let prettyDate = '';
 	$: {
@@ -18,34 +20,21 @@
 			timeDiffInSeconds = Math.floor(diff / 1000);
 		}
 	}
-	let efficiency = 0;
-	$: efficiency =
-		!$gameStore || $gameStore.clicks === 0
-			? 0
-			: Math.floor(($gameStore.threeBV / $gameStore.clicks) * 10000) / 100;
-	let threeBVPerSecond = 0;
-	$: threeBVPerSecond = !$gameStore
-		? 0
-		: Math.floor(($gameStore.threeBV / (timeDiffInSeconds === 0 ? 1 : timeDiffInSeconds)) * 100) /
-		  100;
-
-	
 
 	let frameId: number = 0;
 	let showcaseTimeout: NodeJS.Timer | null = null;
 	onMount(() => {
-		if($imageStore.showcaseMode){
+		if ($imageStore.showcaseMode) {
 			showcaseTimeout = setInterval(() => {
-			 	frameId = (frameId + 1) % $imageStore.showcaseImages.length;
+				frameId = (frameId + 1) % $imageStore.showcaseImages.length;
 			}, 500);
 		}
-	})
+	});
 	onDestroy(() => {
-		if(showcaseTimeout){
+		if (showcaseTimeout) {
 			clearInterval(showcaseTimeout);
 		}
-	})
-
+	});
 </script>
 
 {#if $gameStore && $gameStore.isGameOver}
@@ -70,16 +59,25 @@
 			</p>
 		{/if}
 		<p class="card variant-soft-surface mb-4 text-center flex justify-between py-2 px-4">
-			Time: <span>{prettyDate}</span>
+			Time: <span> <PbBagde store="local" field="time" />{prettyDate}</span>
 		</p>
 		<p class="card variant-soft-surface mb-4 text-center flex justify-between py-2 px-4">
-			Clicks: <span>{$gameStore.clicks}</span>
+			Clicks: <span><PbBagde store="local" field="clicks" />{$gameStore.clicks}</span>
 		</p>
 		<div class="card variant-soft-surface mb-4 text-center py-2 px-4">
-			<p class="flex justify-between">3BV: <span>{$gameStore.threeBV}</span></p>
+			<p class="flex justify-between">
+				3BV: <span><PbBagde store="local" field="threeBV" />{$gameStore.threeBV}</span>
+			</p>
 			{#if $gameStore.isGameWon}
-				<p class="flex justify-between">3BV/sec: <span>{threeBVPerSecond}</span></p>
-				<p class="flex justify-between">Efficiency: <span>{efficiency}%</span></p>
+				<p class="flex justify-between">
+					3BV/sec: <span>{$gameStore.score.current.threeBVPerSecond}</span>
+				</p>
+				<p class="flex justify-between">
+					Efficiency: <span
+						><PbBagde store="local" field="efficiency" />{$gameStore.score.current
+							.efficiency}%</span
+					>
+				</p>
 			{/if}
 		</div>
 		<div class="flex justify-between flex-wrap">
@@ -88,7 +86,9 @@
 			</div>
 			{#if $gameStore.isGameWon}
 				<div class="m-auto w-full sm:w-[50%] mb-2 sm:mb-0 p-2">
-					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate)}>Share</button>
+					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate)}
+						>Share</button
+					>
 				</div>
 			{/if}
 		</div>
