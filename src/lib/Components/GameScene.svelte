@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
 	import type { Block, Cube as CubeType } from '$lib/Cube';
+	import { submitScore } from '$lib/Leaderboard';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
@@ -34,14 +35,39 @@
 	}
 
 	function checkWin() {
+		const startTime = $gameStore.startTime;
+		if (!$gameStore.isPlaying || startTime === null) return;
 		if (isComplete()) {
+			const endTime = Date.now();
+			const efficiency = Math.floor(($gameStore.threeBV / $gameStore.clicks) * 10000) / 100;
+			const threeBVPerSecond =
+				Math.floor(($gameStore.threeBV / ((endTime - startTime) / 1000)) * 100) / 100;
+			const updatedScore = submitScore(
+				$gameStore.size,
+				$gameStore.clicks,
+				$gameStore.threeBV,
+				efficiency,
+				endTime - startTime
+			);
+			console.log('Updated score', updatedScore);
+			
 			$gameStore = {
 				...$gameStore,
 				isGameOver: true,
 				isPlaying: false,
 				isGameWon: true,
-				endTime: Date.now(),
-				bombs: 0
+				endTime: endTime,
+				bombs: 0,
+				score: {
+					updated: updatedScore,
+					current: {
+						clicks: $gameStore.clicks,
+						threeBV: $gameStore.threeBV,
+						efficiency: efficiency,
+						time: endTime - startTime,
+						threeBVPerSecond: threeBVPerSecond
+					}
+				}
 			};
 			showSweeped(true);
 		}
@@ -88,13 +114,30 @@
 	}
 
 	function gameOver() {
+		const startTime = $gameStore.startTime;
+		if (!$gameStore.isPlaying || startTime === null) return;
+		const endTime = Date.now();
+		const efficiency = Math.floor(($gameStore.threeBV / $gameStore.clicks) * 10000) / 100;
+		const threeBVPerSecond =
+			Math.floor(($gameStore.threeBV / ((endTime - startTime) / 1000)) * 100) / 100;
+		const updatedScore = {}; // No need to update score if game is lost
 		$gameStore = {
 			...$gameStore,
 			isGameOver: true,
 			isPlaying: false,
 			isGameWon: false,
-			endTime: Date.now(),
-			bombs: countBombs(true)
+			endTime: endTime,
+			bombs: countBombs(true),
+			score: {
+				updated: updatedScore,
+				current: {
+					clicks: $gameStore.clicks,
+					threeBV: $gameStore.threeBV,
+					efficiency: efficiency,
+					time: endTime - startTime,
+					threeBVPerSecond: threeBVPerSecond
+				}
+			}
 		};
 		showSweeped(false);
 	}
@@ -152,7 +195,7 @@
 		if ($mouse) {
 			const xDiff = clientX - $mouse.x;
 			const yDiff = clientY - $mouse.y;
-			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);			
+			const totalDiff = Math.abs(xDiff) + Math.abs(yDiff);
 			if (totalDiff > 10) return false;
 		}
 		return true;
@@ -271,8 +314,8 @@
 		for (const pos of tmpPreReveal) {
 			const block = cube.getBlock(pos.x, pos.y, pos.z);
 			if (!block || block.type === 'air') continue;
-			if(block.isSweeped) continue;
-			if(block.isFlagged) continue;
+			if (block.isSweeped) continue;
+			if (block.isFlagged) continue;
 			preReveal.push(pos);
 			updateTexture(block);
 		}
@@ -387,8 +430,8 @@
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
 			takeImage(true);
-			if(!screenShake.isActive() && !$gameStore.isGameWon) screenShake.shake(camera.current, new Vector3(-.5,0,.5), 250)
-
+			if (!screenShake.isActive() && !$gameStore.isGameWon)
+				screenShake.shake(camera.current, new Vector3(-0.5, 0, 0.5), 250);
 		} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
 			if (Date.now() - lastImageTime > 1000) {
 				console.log('Taking image');
