@@ -4,13 +4,13 @@
 	import { submitScore } from '$lib/Leaderboard';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
-	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { T, useRender, useThrelte } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
-	import { Vector3 } from 'three';
 	import Cube from './Cube/Cube.svelte';
+	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
+	import { Vector3 } from 'three';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
@@ -439,6 +439,7 @@
 				lastImageTime = Date.now();
 			}
 		}
+		
 	});
 	let dist = 0;
 	$: {
@@ -447,7 +448,6 @@
 		}
 	}
 </script>
-
 <InteractiveScene>
 	<T.Cache enabled={true} />
 	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]} near={0.01} far={1000}>
