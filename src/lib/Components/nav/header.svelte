@@ -3,7 +3,7 @@
 	import DropdownMenu from './DropdownMenu.svelte';
 </script>
 
-<AppBar class="z-50 relative"
+<AppBar class="z-50 relative flex"
 	><a href="/" class="flex justify-center items-center"
 		><img
 			src="/icon_transparent.png"
