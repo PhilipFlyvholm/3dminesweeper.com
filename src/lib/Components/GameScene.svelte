@@ -19,7 +19,6 @@
 	$: width = cube.getWidth();
 	$: height = cube.getHeight();
 	$: depth = cube.getDepth();
-	const { invalidate } = useThrelte();
 	function isComplete() {
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
@@ -46,6 +45,7 @@
 				$gameStore.size,
 				$gameStore.clicks,
 				$gameStore.threeBV,
+				threeBVPerSecond,
 				efficiency,
 				endTime - startTime
 			);

@@ -3,13 +3,13 @@ import { gameStore } from "$lib/Stores/GameStore";
 import { get } from "svelte/store";
 import { imageStore } from "$lib/Stores/ImageStore";
 function dataURLtoFile(dataurl: string, filename: string) {
-    let arr = dataurl.split(',');
+    const arr = dataurl.split(',');
     if (arr.length < 2) return null;
-    let mime = arr[0].match(/:(.*?);/);
+    const mime = arr[0].match(/:(.*?);/);
     if (!mime) return null;
-    let bstr = atob(arr[arr.length - 1]),
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
+    const bstr = atob(arr[arr.length - 1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n);
     while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
     }
