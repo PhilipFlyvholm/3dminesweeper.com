@@ -9,7 +9,7 @@
 	import type { Group } from 'three';
 	import { Instance } from '@threlte/extras';
 	import type { PositionMesh } from '@threlte/extras/dist/components/Instancing/PositionMesh';
-	import type {  NonAirBlock } from '$lib/Cube';
+	import type { NonAirBlock } from '$lib/Cube';
 
 	export let block: NonAirBlock;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
@@ -19,7 +19,7 @@
 	const isTouch = isTouchDevice();
 	let mesh: PositionMesh;
 	let flag = writable<Group | null>(null);
-	$: position = {x: block.x, y: block.y, z: block.z};
+	$: position = { x: block.x, y: block.y, z: block.z };
 	$: instanceId = 'block-' + block.texture;
 	$: facing = block.facing;
 	onMount(async () => {
@@ -30,21 +30,22 @@
 		if ($isMoving && $scale !== 1) $scale = 1;
 	});
 </script>
+
 {#key instanceId}
-<Instance
-	id={instanceId}
-	scale={$scale}
-	position={[position.x, position.y, position.z]}
-	bind:ref={mesh}
-	on:pointerenter={() => {
-		if ($isMoving !== 'none' || isTouch) return;
-		if ($gameStore.isPlaying) $scale = 1.15;
-	}}
-	on:pointerleave={() => {
-		if ($isMoving !== 'none' || isTouch) return;
-		$scale = 1;
-	}}
-/>
+	<Instance
+		id={instanceId}
+		scale={$scale}
+		position={[position.x, position.y, position.z]}
+		bind:ref={mesh}
+		on:pointerenter={() => {
+			if ($isMoving !== 'none' || isTouch) return;
+			if ($gameStore.isPlaying) $scale = 1.15;
+		}}
+		on:pointerleave={() => {
+			if ($isMoving !== 'none' || isTouch) return;
+			$scale = 1;
+		}}
+	/>
 {/key}
 {#key isFlagged}
 	{#if isFlagged && $flag && $flag !== null}

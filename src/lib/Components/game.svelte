@@ -39,6 +39,7 @@
 		currentTool = 'shovel';
 
 		cube = new Cube(width, height, depth);
+		console.log('Initializing cube', width, height, depth, cube.cube.length);
 
 		estimatedBombsRemaining = cube.bombs;
 		$gameStore = {
@@ -99,7 +100,6 @@
 
 	let isMoving = writable<'click' | 'drag' | 'none'>('none');
 
-	
 	function handleKeyPress(e: KeyboardEvent) {
 		if (e.key === 'r' && dev) {
 			init();
@@ -107,7 +107,7 @@
 	}
 </script>
 
-<svelte:window on:keypress={handleKeyPress}/>
+<svelte:window on:keypress={handleKeyPress} />
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="gameScreen relative h-full w-full">
 	<div
@@ -128,9 +128,11 @@
 					</div>
 				{/if}
 
-				<Canvas>
-					<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
-				</Canvas>
+				{#if cube && cube.cube}
+					<Canvas>
+						<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
+					</Canvas>
+				{/if}
 			{/key}
 		{/if}
 	</div>

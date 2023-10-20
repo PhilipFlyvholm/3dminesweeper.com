@@ -5,7 +5,7 @@
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
-	import { T, useRender, useThrelte } from '@threlte/core';
+	import { T, useRender } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
 	import Cube from './Cube/Cube.svelte';
@@ -51,7 +51,7 @@
 				endTime - startTime
 			);
 			console.log('Updated score', updatedScore);
-			
+
 			$gameStore = {
 				...$gameStore,
 				isGameOver: true,
@@ -252,7 +252,6 @@
 		clientY: number,
 		point: Vector3
 	) {
-		
 		if (!isValidMouseMove(clientX, clientY)) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
@@ -262,8 +261,8 @@
 			block.isFlagged = false;
 			estimatedBombsRemaining++;
 		} else {
-			const face = getFaceFromPoint(point, pos);		
-			if(face) block.facing = face;
+			const face = getFaceFromPoint(point, pos);
+			if (face) block.facing = face;
 			block.isFlagged = true;
 			estimatedBombsRemaining--;
 		}
@@ -445,15 +444,15 @@
 				lastImageTime = Date.now();
 			}
 		}
-		
 	});
 	let dist = 0;
 	$: {
 		if (width !== undefined || height !== undefined || depth !== undefined) {
-			dist = (Math.max(width, height, depth)) / (2 * Math.tan((24 * Math.PI) / 360)) +1;
+			dist = Math.max(width, height, depth) / (2 * Math.tan((24 * Math.PI) / 360)) + 1;
 		}
 	}
 </script>
+
 <InteractiveScene>
 	<T.Cache enabled={true} />
 	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]} near={0.01} far={1000}>

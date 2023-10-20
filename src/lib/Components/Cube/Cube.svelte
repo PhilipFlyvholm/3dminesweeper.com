@@ -8,7 +8,7 @@
 	import type { Texture } from 'three';
 	import Box from '../box.svelte';
 	import CubeInstances from './CubeInstances.svelte';
-	export let cube: Block[][][];
+	export let cube: Block[][][] = [];
 	export let handleLeftClick: BoxLeftClick;
 	export let handleRightClick: BoxRightClick;
 	export let handlePointerDown: BoxPointerDown;
@@ -23,6 +23,7 @@
 		});
 		return array;
 	}
+	
 	let counter = 0;
 	let time = 0;
 	beforeUpdate(() => (time = performance.now()));
@@ -48,21 +49,31 @@
 		handlePointerDown(e.object.position);
 	}}
 >
-	{#await loadTexturesIfUnloaded() then textures}
-		{#if textures && textures.size !== 0}
-			<CubeInstances textures={convertMapToObjectArray(textures)}>
-				{#each cube as xAxes, x}
-					{#each xAxes as yAxes, y}
-						{#each yAxes as block, z}
-							{#if block.type !== 'air'}
-								{@const randomFlagRotation =
-									((x + y + z) / (cube.length + xAxes.length + yAxes.length)) * Math.PI * 2}
-								<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged} />
-							{/if}
+	{#await loadTexturesIfUnloaded()}
+		<!-- promise is pending -->
+		<p>loading...</p>
+		<T.BoxGeometry args={[1, 1, 1]} />
+	{:then textures}
+		{#key cube.length}
+			{cube.length}
+			{#if textures && textures.size !== 0}
+				<CubeInstances textures={convertMapToObjectArray(textures)}>
+					{#each cube as xAxes, x}
+						{#each xAxes as yAxes, y}
+							{#each yAxes as block, z}
+								{#if block.type !== 'air'}
+									{@const randomFlagRotation =
+										((x + y + z) / (cube.length + xAxes.length + yAxes.length)) * Math.PI * 2}
+									<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged} />
+								{/if}
+							{/each}
 						{/each}
 					{/each}
-				{/each}
-			</CubeInstances>
-		{/if}
+				</CubeInstances>
+			{/if}
+		{/key}
+	{:catch error}
+		<!-- promise was rejected -->
+		<p>Something went wrong: {error.message}</p>
 	{/await}
 </T.Group>
