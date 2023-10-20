@@ -33,11 +33,13 @@
 
 <T.Group
 	on:pointerup={(e) => {
+		if(e.object.type !== "Group") return;
 		e.stopPropagation();
+
 		if (e.nativeEvent.button === 0) {			
-			handleLeftClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
+			handleLeftClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY, e.point);
 		} else if (e.nativeEvent.button === 2) {
-			handleRightClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY);
+			handleRightClick(e.object.position, e.nativeEvent.clientX, e.nativeEvent.clientY, e.point);
 		}
 	}}
 	on:pointerdown={(e) => {

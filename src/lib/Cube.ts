@@ -36,7 +36,7 @@ export class Cube {
         const blockAmount =
             width * height * depth -
             Math.max(width - 2, 0) * Math.max(height - 2, 0) * Math.max(depth - 2, 0);
-        this.bombs = Math.max(Math.floor(blockAmount / 10), 1);
+        this.bombs = Math.min(blockAmount-1, Math.max(Math.floor(blockAmount / 10), 1));
         this.cube = createPlainCube(width, height, depth);
         
         this.size = {

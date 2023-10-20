@@ -11,6 +11,7 @@
 	import Cube from './Cube/Cube.svelte';
 	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
 	import { Vector3 } from 'three';
+	import { getFaceFromPoint } from '$lib/Utils/FaceUtil';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
@@ -204,7 +205,8 @@
 	async function handleLeftClick(
 		pos: { x: number; y: number; z: number },
 		clientX: number,
-		clientY: number
+		clientY: number,
+		point: Vector3
 	) {
 		if (!isValidMouseMove(clientX, clientY)) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
@@ -219,7 +221,7 @@
 			updateTime();
 		}
 		if (currentTool === 'flag') {
-			return handleRightClick(pos, clientX, clientY);
+			return handleRightClick(pos, clientX, clientY, point);
 		}
 		//Left click
 		if (block.isFlagged) return;
@@ -247,8 +249,10 @@
 	function handleRightClick(
 		pos: { x: number; y: number; z: number },
 		clientX: number,
-		clientY: number
+		clientY: number,
+		point: Vector3
 	) {
+		
 		if (!isValidMouseMove(clientX, clientY)) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
@@ -258,6 +262,8 @@
 			block.isFlagged = false;
 			estimatedBombsRemaining++;
 		} else {
+			const face = getFaceFromPoint(point, pos);		
+			if(face) block.facing = face;
 			block.isFlagged = true;
 			estimatedBombsRemaining--;
 		}
@@ -444,7 +450,7 @@
 	let dist = 0;
 	$: {
 		if (width !== undefined || height !== undefined || depth !== undefined) {
-			dist = Math.max(width, height, depth) / (2 * Math.tan((24 * Math.PI) / 360));
+			dist = (Math.max(width, height, depth)) / (2 * Math.tan((24 * Math.PI) / 360)) +1;
 		}
 	}
 </script>
@@ -457,7 +463,7 @@
 			enableRotate={true}
 			autoRotate={!isPlaying}
 			minDistance={Math.max(width, height, depth) + 5}
-			maxDistance={Math.max(width, height, depth) * 3 + dist}
+			maxDistance={Math.max(width, height, depth) * 3 + dist + 5}
 			target={[width / 2 - 0.5, height / 2 - 0.5, depth / 2 - 0.5]}
 			on:start={handlePanStart}
 			on:end={handlePanEnd}
