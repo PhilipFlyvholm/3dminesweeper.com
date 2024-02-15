@@ -7,7 +7,8 @@
 	import type { Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import PbBagde from '../Badges/PBBagde.svelte';
-	import { getToastStore } from '@skeletonlabs/skeleton';
+	import { getDrawerStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { shareDrawerSettings } from './drawers/share/ShareDrawerSettings';
 
 	export let restart = () => {};
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
@@ -39,6 +40,7 @@
 	});
 
 	const toastStore = getToastStore();
+	const drawerStore = getDrawerStore();
 </script>
 
 {#if $gameStore && $gameStore.isGameOver}
@@ -90,7 +92,7 @@
 			</div>
 			{#if $gameStore.isGameWon}
 				<div class="m-auto w-full sm:w-[50%] mb-2 sm:mb-0 p-2">
-					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate, toastStore)}
+					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate, toastStore, drawerStore)}
 						>Share</button
 					>
 				</div>
