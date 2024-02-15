@@ -2,6 +2,7 @@ import { createToast } from "$lib/Utils/ToastUtil";
 import { gameStore } from "$lib/Stores/GameStore";
 import { get } from "svelte/store";
 import { imageStore } from "$lib/Stores/ImageStore";
+import type { ToastStore } from "@skeletonlabs/skeleton";
 function dataURLtoFile(dataurl: string, filename: string) {
     const arr = dataurl.split(',');
     if (arr.length < 2) return null;
@@ -17,7 +18,7 @@ function dataURLtoFile(dataurl: string, filename: string) {
 }
 
 
-export function share(prettyDate: string) {
+export function share(prettyDate: string, toastStore: ToastStore) {
     const $gameStore = get(gameStore);
     const $imageStore = get(imageStore);
     if (!$gameStore || !$gameStore.isGameOver || !$gameStore.isGameWon) return;
@@ -73,11 +74,11 @@ export function share(prettyDate: string) {
         navigator
             .share(shareObject)
             .then(() => {
-                createToast('Successfully shared!');
+                createToast(toastStore, 'Successfully shared!',);
                 console.log('Share was successful.');
             })
             .catch((error) => {
-                createToast('Something went wrong during sharing', true);
+                createToast(toastStore, 'Something went wrong during sharing', true);
                 console.log('Sharing failed', error);
             });
     } else {
@@ -88,9 +89,9 @@ export function share(prettyDate: string) {
         const string = message + ` Try to beat me at ${url}`;
         if(navigator.clipboard){
             navigator.clipboard.writeText(string);
-            createToast('Copied to clipboard!');
+            createToast(toastStore, 'Copied to clipboard!');
         }else{
-            createToast('Failed to copy to clipboard', true)
+            createToast(toastStore, 'Failed to copy to clipboard', true)
         }
             
     }

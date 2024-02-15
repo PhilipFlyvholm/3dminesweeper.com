@@ -7,6 +7,7 @@
 	import type { Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import PbBagde from '../Badges/PBBagde.svelte';
+	import { getToastStore } from '@skeletonlabs/skeleton';
 
 	export let restart = () => {};
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
@@ -22,7 +23,8 @@
 	}
 
 	let frameId: number = 0;
-	let showcaseTimeout: NodeJS.Timer | null = null;
+	type Timeout = string | number | NodeJS.Timeout | undefined;
+	let showcaseTimeout: Timeout = undefined;
 	onMount(() => {
 		if ($imageStore.showcaseMode) {
 			showcaseTimeout = setInterval(() => {
@@ -35,6 +37,8 @@
 			clearInterval(showcaseTimeout);
 		}
 	});
+
+	const toastStore = getToastStore();
 </script>
 
 {#if $gameStore && $gameStore.isGameOver}
@@ -86,7 +90,7 @@
 			</div>
 			{#if $gameStore.isGameWon}
 				<div class="m-auto w-full sm:w-[50%] mb-2 sm:mb-0 p-2">
-					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate)}
+					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate, toastStore)}
 						>Share</button
 					>
 				</div>

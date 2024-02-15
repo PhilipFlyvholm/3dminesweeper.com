@@ -35,6 +35,11 @@ export async function GET() {
                 <changefreq>weekly</changefreq>
                 <priority>0.5</priority>
             </url>
+            <url>
+                <loc>https://3dminesweeper.com/blog/how-to-play-3d-minesweeper</loc>
+                <changefreq>weekly</changefreq>
+                <priority>0.5</priority>
+            </url>
         </urlset>`.trim(),
         {
             headers: {
