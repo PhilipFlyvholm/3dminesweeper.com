@@ -27,10 +27,6 @@
         {#each shareProviders as provider}
             <SocialShareButton name={provider.name} icon={provider.icon} link={provider.getShareUrl(shareData)} />
         {/each}
-		<SocialShareButton name="Facebook" icon="tabler:brand-facebook" />
-		<SocialShareButton name="X" icon="tabler:brand-x" />
-		<SocialShareButton name="Instagram" icon="tabler:brand-instagram" />
-		<SocialShareButton name="WhatsApp" icon="tabler:brand-whatsapp" />
 	</div>
 	<div class="spacer w-full h-[1px] bg-[#D4D4D8] my-2" />
 	<button class="btn bg-white shadow min-w-[50%] my-2 flex justify-between" 
