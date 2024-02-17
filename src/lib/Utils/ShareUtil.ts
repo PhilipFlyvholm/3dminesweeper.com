@@ -20,7 +20,7 @@ function dataURLtoFile(dataurl: string, filename: string) {
 	return new File([u8arr], filename, { type: mime[1] });
 }
 
-export function share(prettyDate: string, toastStore: ToastStore, drawerStore: DrawerStore) {
+export function share(prettyDate: string, toastStore: ToastStore, drawerStore: DrawerStore, shareableImage: string) {
 	const $gameStore = get(gameStore);
 	const $imageStore = get(imageStore);
 	if (!$gameStore || !$gameStore.isGameOver || !$gameStore.isGameWon) return;
@@ -37,6 +37,7 @@ export function share(prettyDate: string, toastStore: ToastStore, drawerStore: D
         $imageStore.gameOverImage !== ''
             ? dataURLtoFile($imageStore.gameOverImage, '3dminesweeper.png')
             : null;
+	
     const title = '3D Minesweeper';
     const url = 'https://3dminesweeper.com';
 	if (navigator.canShare !== undefined && navigator.share) {
