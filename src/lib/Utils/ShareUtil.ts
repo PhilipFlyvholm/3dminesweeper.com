@@ -22,7 +22,6 @@ function dataURLtoFile(dataurl: string, filename: string) {
 
 export function share(prettyDate: string, toastStore: ToastStore, drawerStore: DrawerStore, shareableImage: string) {
 	const $gameStore = get(gameStore);
-	const $imageStore = get(imageStore);
 	if (!$gameStore || !$gameStore.isGameOver || !$gameStore.isGameWon) return;
 	const time = prettyDate.split(':');
 	const hours = parseInt(time[0]);
@@ -33,10 +32,7 @@ export function share(prettyDate: string, toastStore: ToastStore, drawerStore: D
 	}`;
 
 	const message = `I just played 3D Minesweeper and cleared a ${$gameStore.size.width}x${$gameStore.size.height}x${$gameStore.size.depth} in ${timeString}!`;
-    const file =
-        $imageStore.gameOverImage !== ''
-            ? dataURLtoFile($imageStore.gameOverImage, '3dminesweeper.png')
-            : null;
+    const file = dataURLtoFile(shareableImage, '3D Minesweeper.png');
 	
     const title = '3D Minesweeper';
     const url = 'https://3dminesweeper.com';

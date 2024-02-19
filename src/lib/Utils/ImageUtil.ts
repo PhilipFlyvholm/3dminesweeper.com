@@ -68,9 +68,9 @@ function addText(
 	text: string,
 	x: number,
 	y: number,
-	size = 50,
+	size = 100,
 	color = 'white',
-	align: CanvasTextAlign = 'center'
+	align: CanvasTextAlign = 'left'
 ) {
 	ctx.font = `${size}px VT323`;
 	ctx.fillStyle = color;
@@ -96,30 +96,14 @@ export const createShareableImage = async (
 		console.log('Found context');
 
 		addGradient(ctx, canvas.width, canvas.height, 'rgb(116, 74, 161)', 'rgb(21, 23, 31');
-		addText(ctx, '3D Minesweeper', canvas.width / 2, 50);
-		addText(ctx, `Time: ${time}`, canvas.width / 2, 100, 40);
-		const effeciencyText = `Efficiency: ${efficiency.toFixed(2)}%`;
-		const clicksText = `Clicks: ${clicks}`;
-		const alignment =
-			effeciencyText.length > clicksText.length ? effeciencyText.length - clicksText.length - 1 : 0;
-		addText(
-			ctx,
-			`Clicks: ${clicks}${' '.repeat(alignment)} | 3BV: ${threebv}`,
-			10,
-			canvas.height - 60,
-			30,
-			'white',
-			'left'
-		);
-		addText(
-			ctx,
-			`Efficiency: ${efficiency.toFixed(2)}% | 3BV/s: ${threebvpersecond.toFixed(2)}`,
-			10,
-			canvas.height - 20,
-			30,
-			'white',
-			'left'
-		);
+		addText(ctx, '3D Minesweeper', 25, 125, 100);
+
+		const statsBaseY = 300;
+		addText(ctx, `Time: ${time}`, 25, statsBaseY, 80);
+		addText(ctx, `Clicks: ${clicks}`, 25, statsBaseY+(70*1), 70);
+		addText(ctx, `Efficiency: ${efficiency.toFixed(2)}%`, 25, statsBaseY+(70*2), 70);
+		addText(ctx, `3BV: ${threebv}`, 25, statsBaseY+(70*3), 70);
+		addText(ctx, `3BV/s: ${threebvpersecond.toFixed(2)}`, 25, statsBaseY+(70*4), 70);
 		const img = new Image();
 		img.onload = () => {
 			console.log('Image loaded');

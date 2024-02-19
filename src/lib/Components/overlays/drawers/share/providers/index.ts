@@ -13,4 +13,4 @@ export interface ShareProvider {
     valid: boolean;
 }
 
-export const shareProviders: ShareProvider[] = [FacebookProvider, MessengerProvider, XProvider, WhatsAppProvider, LinkedInProvider, EmailProvider]
+export const shareProviders: ShareProvider[] = [FacebookProvider, MessengerProvider, XProvider, WhatsAppProvider, LinkedInProvider, EmailProvider].filter((provider) => provider.valid);
