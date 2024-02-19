@@ -2,13 +2,13 @@
 	import { updated } from '$app/stores';
 	import { gameStore } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
+	import { createShareableImage } from '$lib/Utils/ImageUtil';
 	import { share } from '$lib/Utils/ShareUtil';
+	import { getDrawerStore, getToastStore } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import PbBagde from '../Badges/PBBagde.svelte';
-	import { getDrawerStore, getToastStore } from '@skeletonlabs/skeleton';
-	import { createShareableImage } from '$lib/Utils/ImageUtil';
 
 	export let restart = () => {};
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
@@ -26,7 +26,7 @@
 	let frameId: number = 0;
 	type Timeout = string | number | NodeJS.Timeout | undefined;
 	let showcaseTimeout: Timeout = undefined;
-	let shareableImage =  writable('');
+	let shareableImage = writable('');
 	onMount(async () => {
 		if ($imageStore.showcaseMode) {
 			showcaseTimeout = setInterval(() => {
@@ -47,24 +47,26 @@
 		if (gameStore && gameStore.isGameOver && gameStore.isGameWon) {
 			imageStore.subscribe(async (value) => {
 				console.log('creating shareable image');
-				let timeUsed = "";
+				let timeUsed = '';
 				if (gameStore.endTime && gameStore.startTime) {
 					const diff = gameStore.endTime - gameStore.startTime;
 					timeUsed = new Date(diff).toISOString().substring(11, 19);
 				}
-				createShareableImage(timeUsed, gameStore.clicks, gameStore.threeBV, gameStore.score.current.efficiency, gameStore.score.current.threeBVPerSecond).then((image) => {
+				createShareableImage(
+					timeUsed,
+					gameStore.clicks,
+					gameStore.threeBV,
+					gameStore.score.current.efficiency,
+					gameStore.score.current.threeBVPerSecond
+				).then((image) => {
 					shareableImage.set(image);
 					console.log('shareable image created', $shareableImage);
-					
 				});
 			});
-			
 		}
 	});
-
-	
 </script>
-{#key $shareableImage}
+
 {#if $gameStore && $gameStore.isGameOver && (!$gameStore.isGameWon || $shareableImage !== '')}
 	{@const text = $gameStore.isGameWon ? 'BOMBS DEFUSED!' : 'GAME OVER!'}
 	<div
@@ -81,8 +83,7 @@
 			</h1>
 			<img style="height:3rem; width:auto;" src={$imageStore.gameOverImage} alt="" />
 		</div>
-		<p>here</p>
-		<img src={$shareableImage} alt="" style="width: 50%;"/>
+		<img src={$shareableImage} alt="" style="width: 50%;" />
 		{#if $gameStore.bombs > 0}
 			<p class="card variant-soft-error mb-4 text-center flex justify-between py-2 px-4">
 				Bombs remaining: <span>{$gameStore.bombs}</span>
@@ -116,7 +117,9 @@
 			</div>
 			{#if $gameStore.isGameWon}
 				<div class="m-auto w-full sm:w-[50%] mb-2 sm:mb-0 p-2">
-					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate, toastStore, drawerStore, $shareableImage)}
+					<button
+						class="btn variant-filled-secondary w-full"
+						on:click={() => share(prettyDate, toastStore, drawerStore, $shareableImage)}
 						>Share</button
 					>
 				</div>
@@ -124,7 +127,7 @@
 		</div>
 	</div>
 {/if}
-{/key}
+
 <style>
 	h1,
 	p {
