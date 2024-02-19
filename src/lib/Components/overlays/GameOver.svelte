@@ -74,16 +74,12 @@
 		class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] card py-5 px-10 rounded w-[90%] sm:w-[50%] flex flex-col transition-opacity"
 		style="opacity: {$isMoving === 'none' ? 1 : 0}"
 	>
-		{#if $imageStore.showcaseImages.length > 0}
-			<img style="height:20rem; width:20rem;" src={$imageStore.showcaseImages[frameId]} alt="" />
-		{/if}
 		<div class="flex items-center justify-center mb-4">
 			<h1 class="h1 text-center">
 				{text}
 			</h1>
 			<img style="height:3rem; width:auto;" src={$imageStore.gameOverImage} alt="" />
 		</div>
-		<img src={$shareableImage} alt="" style="width: 50%;" />
 		{#if $gameStore.bombs > 0}
 			<p class="card variant-soft-error mb-4 text-center flex justify-between py-2 px-4">
 				Bombs remaining: <span>{$gameStore.bombs}</span>

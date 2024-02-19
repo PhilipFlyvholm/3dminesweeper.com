@@ -15,11 +15,5 @@
 			class="h-[2rem]"
 		/>3DMinesweeper.com</a
 	>
-	<button on:click={() => drawerStore.open(shareDrawerSettings({
-		clipboardMessage: 'https://3DMinesweeper.com',
-		title: '3DMinesweeper.com',
-		text: 'Play 3D Minesweeper now!',
-		url: 'https://3DMinesweeper.com'	
-	}))}>Test share</button>
 	<DropdownMenu slot="trail"/>
 </AppBar>

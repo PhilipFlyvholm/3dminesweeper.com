@@ -76,7 +76,7 @@ export class Cube {
     }
 
     populate(firstClick:{x:number,y:number,z:number}) {
-        const {cube, difficulty, seed, estimatedBombsRemaining} = addBombs(this.cube, firstClick, this.bombs, 0); //FIXME: remove seed
+        const {cube, difficulty, seed, estimatedBombsRemaining} = addBombs(this.cube, firstClick, this.bombs);
         this.cube = cube;
         this.difficulty = difficulty;
         this.bombs = estimatedBombsRemaining;

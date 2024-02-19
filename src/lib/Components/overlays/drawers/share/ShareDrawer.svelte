@@ -31,7 +31,6 @@
 			reader.onerror = reject;
 		});
 
-
 	function handleDownload(): any {
 		const link = document.createElement('a');
 		link.href = shareData.files ? URL.createObjectURL(shareData.files[0]) : '';
@@ -54,9 +53,14 @@
 		{/each}
 	</div>
 	<div class="spacer w-full h-[1px] bg-[#D4D4D8] my-2" />
-	<button class="btn bg-white shadow min-w-[50%] my-2 flex justify-between" type="button" on:click={() => handleDownload()}
-		>Download image  <Icon icon="tabler:file-download" /></button
-	>
+	{#if shareData.files && shareData.files.length > 0}
+		<button
+			class="btn bg-white shadow min-w-[50%] my-2 flex justify-between"
+			type="button"
+			on:click={() => handleDownload()}>Download image <Icon icon="tabler:file-download" /></button
+		>
+	{/if}
+
 	<button
 		class="btn bg-white shadow min-w-[50%] my-2 flex justify-between"
 		on:click={() => handleClipboardCopy()}

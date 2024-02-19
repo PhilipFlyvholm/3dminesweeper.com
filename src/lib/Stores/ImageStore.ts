@@ -4,10 +4,12 @@ type ImageStore = {
 	showcaseMode: boolean;
 	gameOverImage: string;
 	showcaseImages: string[];
+	processesingGameOverImage: boolean;
 };
 export const imageStore = writable<ImageStore>({
 	showcaseMode: false,
 	gameOverImage: '',
-	showcaseImages: []
+	showcaseImages: [],
+	processesingGameOverImage: false,
 });
 

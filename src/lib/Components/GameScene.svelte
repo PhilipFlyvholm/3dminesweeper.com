@@ -435,6 +435,7 @@
 		screenShake.update(camera.current);
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
+			if($imageStore.processesingGameOverImage) return;
 			takeImageOfCube(true);
 			if (!screenShake.isActive() && !$gameStore.isGameWon)
 				screenShake.shake(camera.current, new Vector3(-0.5, 0, 0.5), 250);

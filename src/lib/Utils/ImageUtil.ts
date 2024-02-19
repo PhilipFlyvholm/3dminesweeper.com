@@ -2,6 +2,12 @@ import { imageStore } from '$lib/Stores/ImageStore';
 import { get } from 'svelte/store';
 
 export const takeImageOfCube = (final: boolean) => {
+	if(final){
+		imageStore.update((store) => {
+			store.processesingGameOverImage = true;
+			return store;
+		});
+	}
 	const canvas = document.getElementsByTagName('canvas')[0];
 	const CopyCanvas = document.createElement('canvas');
 	CopyCanvas.width = canvas.width;
@@ -42,6 +48,7 @@ export const takeImageOfCube = (final: boolean) => {
 	imageStore.update((store) => {
 		if (final) store.gameOverImage = dataUrl;
 		else store.showcaseImages.push(dataUrl);
+		store.processesingGameOverImage = false;
 		return store;
 	});
 };
