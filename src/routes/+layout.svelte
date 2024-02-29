@@ -3,7 +3,7 @@
 	import Footer from '$lib/Components/nav/footer.svelte';
 	import Header from '$lib/Components/nav/header.svelte';
 	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
-	import { AppShell, Toast } from '@skeletonlabs/skeleton';
+	import { AppShell, Drawer, Toast } from '@skeletonlabs/skeleton';
 	import '../app.postcss';
 
 	import { storePopup } from '@skeletonlabs/skeleton';
@@ -13,6 +13,7 @@
 	import { dev } from '$app/environment';
 	import { initializeStores } from '@skeletonlabs/skeleton';
 	import { inject } from '@vercel/analytics';
+	import DrawerHandler from '$lib/Components/overlays/drawers/DrawerHandler.svelte';
 
 	inject({ mode: dev ? 'development' : 'production' });
 	initializeStores();
@@ -22,6 +23,7 @@
 	<title>3D Minesweeper - Play Minesweeper in a new dimension</title>
 </svelte:head>
 <Toast />
+<DrawerHandler />
 <AppShell>
 	<svelte:fragment slot="pageHeader"><Header /></svelte:fragment>
 	<slot />

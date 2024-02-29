@@ -3,7 +3,7 @@
 	import type { Block, Cube as CubeType } from '$lib/Cube';
 	import { submitScore } from '$lib/Leaderboard';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
-	import { imageStore, takeImage } from '$lib/Stores/ImageStore';
+	import { imageStore } from '$lib/Stores/ImageStore';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { T, useRender } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
@@ -12,6 +12,7 @@
 	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
 	import { Vector3 } from 'three';
 	import { getFaceFromPoint } from '$lib/Utils/FaceUtil';
+	import { takeImageOfCube } from '$lib/Utils/ImageUtil';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
@@ -434,13 +435,14 @@
 		screenShake.update(camera.current);
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
-			takeImage(true);
+			if($imageStore.processesingGameOverImage) return;
+			takeImageOfCube(true);
 			if (!screenShake.isActive() && !$gameStore.isGameWon)
 				screenShake.shake(camera.current, new Vector3(-0.5, 0, 0.5), 250);
 		} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
 			if (Date.now() - lastImageTime > 1000) {
 				console.log('Taking image');
-				takeImage(false);
+				takeImageOfCube(false);
 				lastImageTime = Date.now();
 			}
 		}

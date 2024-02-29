@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { updated } from '$app/stores';
 	import { gameStore } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
+	import { createShareableImage } from '$lib/Utils/ImageUtil';
 	import { share } from '$lib/Utils/ShareUtil';
+	import { getDrawerStore } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import PbBagde from '../Badges/PBBagde.svelte';
-	import { getToastStore } from '@skeletonlabs/skeleton';
 
 	export let restart = () => {};
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
@@ -25,7 +25,8 @@
 	let frameId: number = 0;
 	type Timeout = string | number | NodeJS.Timeout | undefined;
 	let showcaseTimeout: Timeout = undefined;
-	onMount(() => {
+	let shareableImage = writable('');
+	onMount(async () => {
 		if ($imageStore.showcaseMode) {
 			showcaseTimeout = setInterval(() => {
 				frameId = (frameId + 1) % $imageStore.showcaseImages.length;
@@ -37,20 +38,38 @@
 			clearInterval(showcaseTimeout);
 		}
 	});
+	const drawerStore = getDrawerStore();
 
-	const toastStore = getToastStore();
+	gameStore.subscribe(async (gameStore) => {
+		if (gameStore && gameStore.isGameOver && gameStore.isGameWon) {
+			imageStore.subscribe(async (value) => {
+				let timeUsed = '';
+				if (gameStore.endTime && gameStore.startTime) {
+					const diff = gameStore.endTime - gameStore.startTime;
+					timeUsed = new Date(diff).toISOString().substring(11, 19);
+				}
+				createShareableImage(
+					timeUsed,
+					gameStore.clicks,
+					gameStore.threeBV,
+					gameStore.score.current.efficiency,
+					gameStore.score.current.threeBVPerSecond
+				).then((image) => {
+					shareableImage.set(image);
+					console.log('shareable image created');
+				});
+			});
+		}
+	});
 </script>
 
-{#if $gameStore && $gameStore.isGameOver}
+{#if $gameStore && $gameStore.isGameOver && (!$gameStore.isGameWon || $shareableImage !== '')}
 	{@const text = $gameStore.isGameWon ? 'BOMBS DEFUSED!' : 'GAME OVER!'}
 	<div
 		transition:fade={{ duration: 300 }}
 		class="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] card py-5 px-10 rounded w-[90%] sm:w-[50%] flex flex-col transition-opacity"
 		style="opacity: {$isMoving === 'none' ? 1 : 0}"
 	>
-		{#if $imageStore.showcaseImages.length > 0}
-			<img style="height:20rem; width:20rem;" src={$imageStore.showcaseImages[frameId]} alt="" />
-		{/if}
 		<div class="flex items-center justify-center mb-4">
 			<h1 class="h1 text-center">
 				{text}
@@ -90,8 +109,9 @@
 			</div>
 			{#if $gameStore.isGameWon}
 				<div class="m-auto w-full sm:w-[50%] mb-2 sm:mb-0 p-2">
-					<button class="btn variant-filled-secondary w-full" on:click={() => share(prettyDate, toastStore)}
-						>Share</button
+					<button
+						class="btn variant-filled-secondary w-full"
+						on:click={() => share(prettyDate, drawerStore, $shareableImage)}>Share</button
 					>
 				</div>
 			{/if}

@@ -20,9 +20,11 @@
 		"@types/three": "^0.155.0",
 		"@vercel/analytics": "^1.0.2",
 		"seeded-rand": "^2.0.1",
-		"three": "^0.154.0"
+		"three": "^0.154.0",
+		"skeleton-share": "^1.0.0"
 	},
 	"devDependencies": {
+		"@iconify/svelte": "^3.1.6",
 		"@skeletonlabs/skeleton": "^2.8.0",
 		"@skeletonlabs/tw-plugin": "^0.3.1",
 		"@sveltejs/adapter-auto": "^2.0.0",

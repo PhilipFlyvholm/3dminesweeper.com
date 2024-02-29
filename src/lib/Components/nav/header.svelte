@@ -4,7 +4,7 @@
 </script>
 
 <AppBar class="z-50 relative flex"
-	><a href="/" class="flex justify-center items-center"
+	><a href="/" class="flex justify-center items-center vt323"
 		><img
 			src="/icon_transparent.png"
 			alt="3DMinesweeper.com's Icon"
