@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { AppBar, getDrawerStore } from '@skeletonlabs/skeleton';
+	import { AppBar } from '@skeletonlabs/skeleton';
 	import DropdownMenu from './DropdownMenu.svelte';
-	import { shareDrawerSettings } from '../overlays/drawers/share/ShareDrawerSettings';
-	const drawerStore = getDrawerStore();
 </script>
 
 <AppBar class="z-50 relative flex"

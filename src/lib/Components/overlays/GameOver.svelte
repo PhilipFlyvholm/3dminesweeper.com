@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { updated } from '$app/stores';
 	import { gameStore } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { createShareableImage } from '$lib/Utils/ImageUtil';
 	import { share } from '$lib/Utils/ShareUtil';
-	import { getDrawerStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { getDrawerStore } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
@@ -39,14 +38,11 @@
 			clearInterval(showcaseTimeout);
 		}
 	});
-
-	const toastStore = getToastStore();
 	const drawerStore = getDrawerStore();
 
 	gameStore.subscribe(async (gameStore) => {
 		if (gameStore && gameStore.isGameOver && gameStore.isGameWon) {
 			imageStore.subscribe(async (value) => {
-				console.log('creating shareable image');
 				let timeUsed = '';
 				if (gameStore.endTime && gameStore.startTime) {
 					const diff = gameStore.endTime - gameStore.startTime;
@@ -60,7 +56,7 @@
 					gameStore.score.current.threeBVPerSecond
 				).then((image) => {
 					shareableImage.set(image);
-					console.log('shareable image created', $shareableImage);
+					console.log('shareable image created');
 				});
 			});
 		}
@@ -115,8 +111,7 @@
 				<div class="m-auto w-full sm:w-[50%] mb-2 sm:mb-0 p-2">
 					<button
 						class="btn variant-filled-secondary w-full"
-						on:click={() => share(prettyDate, toastStore, drawerStore, $shareableImage)}
-						>Share</button
+						on:click={() => share(prettyDate, drawerStore, $shareableImage)}>Share</button
 					>
 				</div>
 			{/if}

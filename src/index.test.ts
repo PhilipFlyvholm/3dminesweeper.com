@@ -1,26 +1,27 @@
-import type { Block, Cube } from '$lib/Types/GameTypes';
+
+import type { Block } from '$lib/Cube';
 import { calculate3BV } from '$lib/Utils/GenerationUtil';
 import { describe, expect, it } from 'vitest';
 
-const addBlock = (cube: Cube, x: number, y: number, z: number) => {
+const addBlock = (cube: Block[][][], x: number, y: number, z: number) => {
 	if (!cube[x]) cube[x] = [];
 	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = { type: 'block', x, y, z, isFlagged: false, isSweeped: false, facing: 'up' };
+	cube[x][y][z] = { type: 'block', x, y, z, isFlagged: false, isSweeped: false, facing: 'up', texture:  "none"};
 };
-const addAir = (cube: Cube, x: number, y: number, z: number) => {
+const addAir = (cube: Block[][][], x: number, y: number, z: number) => {
 	if (!cube[x]) cube[x] = [];
 	if (!cube[x][y]) cube[x][y] = [];
 	cube[x][y][z] = { type: 'air', x, y, z };
 };
-const addBomb = (cube: Cube, x: number, y: number, z: number) => {
+const addBomb = (cube: Block[][][], x: number, y: number, z: number) => {
 	if (!cube[x]) cube[x] = [];
 	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = { type: 'bomb', x, y, z, isFlagged: false, isSweeped: false, facing: 'up' };
+	cube[x][y][z] = { type: 'bomb', x, y, z, isFlagged: false, isSweeped: false, facing: 'up', texture:  "none" };
 };
 
 describe('3bv test', () => {
 	it('should equal one (3x3x3 without bomb)', () => {
-		const cube: Cube = [];
+		const cube: Block[][][] = [];
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
@@ -39,7 +40,7 @@ describe('3bv test', () => {
 		expect(count).toBe(1);
 	});
 	it('should equal two (3x3x3 without bomb two bombs next to each other)', () => {
-		const cube: Cube = [];
+		const cube: Block[][][] = [];
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
@@ -61,7 +62,7 @@ describe('3bv test', () => {
 		expect(count).toBe(2);
 	});
 	it('should equal one (3x3x3 without bomb two bombs opposite to each other)', () => {
-		const cube: Cube = [];
+		const cube: Block[][][] = [];
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
@@ -83,7 +84,7 @@ describe('3bv test', () => {
 		expect(count).toBe(1);
 	});
 	it('should equal two (3x3x3 without bomb two bombs opposite to each other but on same row)', () => {
-		const cube: Cube = [];
+		const cube: Block[][][] = [];
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
