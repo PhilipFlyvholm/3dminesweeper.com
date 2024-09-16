@@ -5,7 +5,7 @@
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
-	import { T, useRender } from '@threlte/core';
+	import { T, useTask, useThrelte } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
 	import Cube from './Cube/Cube.svelte';
@@ -18,6 +18,8 @@
 	export let currentTool: 'shovel' | 'flag';
 	export let estimatedBombsRemaining: number;
 	export let cube: CubeType;
+	const { renderStage, camera, renderer, scene } = useThrelte()
+
 	$: width = cube.getWidth();
 	$: height = cube.getHeight();
 	$: depth = cube.getDepth();
@@ -210,10 +212,10 @@
 		point: Vector3
 	) {
 		if (!isValidMouseMove(clientX, clientY)) return;
+		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
 		if (block.type === 'air') return;
-		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
 		if ($gameStore.startTime === null) {
 			//First click
 			cube = cube.populate(pos);
@@ -382,8 +384,6 @@
 			return currentTool === 'shovel' ? 'block_open_air' : 'block_flag';
 		}
 
-		//if(block.type === 'bomb') return 'block_bomb'
-
 		return 'block_default';
 	}
 
@@ -430,8 +430,7 @@
 
 	let lastImageTime = 0;
 	const screenShake = new ScreenShake();
-	useRender(({ camera, renderer, scene }, delta) => {
-		if (!renderer) return;
+	useTask(() => {
 		screenShake.update(camera.current);
 		renderer.render(scene, camera.current);
 		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
@@ -446,7 +445,7 @@
 				lastImageTime = Date.now();
 			}
 		}
-	});
+	}, { stage: renderStage, autoInvalidate: false });
 	let dist = 0;
 	$: {
 		if (width !== undefined || height !== undefined || depth !== undefined) {
@@ -454,12 +453,12 @@
 		}
 	}
 </script>
-
+<!--FUTURE NOTE: Bug in threlte/extras/OrbitControls with three version ^0.68.0. Fix is already pulled into main but not published to NPM at time of writing. Please update threejs & thretle/extras when possible -->
 <InteractiveScene>
 	<T.Cache enabled={true} />
 	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]} near={0.01} far={1000}>
 		<OrbitControls
-			enablePan={false}
+			enablePan={false} 
 			enableZoom={true}
 			enableRotate={true}
 			autoRotate={!isPlaying}

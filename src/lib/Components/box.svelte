@@ -8,7 +8,6 @@
 	import { writable, type Writable } from 'svelte/store';
 	import type { Group } from 'three';
 	import { Instance } from '@threlte/extras';
-	import type { PositionMesh } from '@threlte/extras/dist/components/Instancing/PositionMesh';
 	import type { NonAirBlock } from '$lib/Cube';
 
 	export let block: NonAirBlock;
@@ -17,7 +16,6 @@
 	export let randomFlagRotation = 0;
 	const scale = spring(1);
 	const isTouch = isTouchDevice();
-	let mesh: PositionMesh;
 	let flag = writable<Group | null>(null);
 	$: position = { x: block.x, y: block.y, z: block.z };
 	$: instanceId = 'block-' + block.texture;
@@ -36,7 +34,6 @@
 		id={instanceId}
 		scale={$scale}
 		position={[position.x, position.y, position.z]}
-		bind:ref={mesh}
 		on:pointerenter={() => {
 			if ($isMoving !== 'none' || isTouch) return;
 			if ($gameStore.isPlaying) $scale = 1.15;
