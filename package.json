@@ -14,14 +14,14 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"@floating-ui/dom": "^1.5.1",
-		"@threlte/core": "^6.0.1",
-		"@threlte/extras": "^5.0.2",
-		"@types/three": "^0.155.0",
+		"@floating-ui/dom": "^1.6.11",
+		"@threlte/core": "^7.3.1",
+		"@threlte/extras": "^8.11.5",
+		"@types/three": "^0.167.0",
 		"@vercel/analytics": "^1.0.2",
 		"seeded-rand": "^2.0.1",
 		"skeleton-share": "^1.0.0",
-		"three": "^0.154.0"
+		"three": "^0.167.0"
 	},
 	"devDependencies": {
 		"@iconify/svelte": "^4.0.2",
