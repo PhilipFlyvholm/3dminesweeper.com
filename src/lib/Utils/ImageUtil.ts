@@ -2,7 +2,7 @@ import { imageStore } from '$lib/Stores/ImageStore';
 import { get } from 'svelte/store';
 
 export const takeImageOfCube = (final: boolean) => {
-	if(final){
+	if (final) {
 		imageStore.update((store) => {
 			store.processesingGameOverImage = true;
 			return store;
@@ -107,22 +107,22 @@ export const createShareableImage = async (
 
 		const statsBaseY = 300;
 		addText(ctx, `Time: ${time}`, 25, statsBaseY, 80);
-		addText(ctx, `Clicks: ${clicks}`, 25, statsBaseY+(70*1), 70);
-		addText(ctx, `Efficiency: ${efficiency.toFixed(2)}%`, 25, statsBaseY+(70*2), 70);
-		addText(ctx, `3BV: ${threebv}`, 25, statsBaseY+(70*3), 70);
-		addText(ctx, `3BV/s: ${threebvpersecond.toFixed(2)}`, 25, statsBaseY+(70*4), 70);
+		addText(ctx, `Clicks: ${clicks}`, 25, statsBaseY + 70 * 1, 70);
+		addText(ctx, `Efficiency: ${efficiency.toFixed(2)}%`, 25, statsBaseY + 70 * 2, 70);
+		addText(ctx, `3BV: ${threebv}`, 25, statsBaseY + 70 * 3, 70);
+		addText(ctx, `3BV/s: ${threebvpersecond.toFixed(2)}`, 25, statsBaseY + 70 * 4, 70);
 		const img = new Image();
 		img.onload = () => {
 			console.log('Image loaded');
 
 			if (img.width > img.height) {
 				const ratio = img.height / img.width;
-				img.width = canvas.height*0.8;
-				img.height = canvas.height*0.8 * ratio ;
+				img.width = canvas.height * 0.8;
+				img.height = canvas.height * 0.8 * ratio;
 			} else {
 				const ratio = img.width / img.height;
-				img.height = canvas.height*0.8;
-				img.width = canvas.height*0.8 * ratio;
+				img.height = canvas.height * 0.8;
+				img.width = canvas.height * 0.8 * ratio;
 			}
 			ctx?.drawImage(
 				img,

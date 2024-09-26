@@ -6,7 +6,7 @@
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { getBombsAround } from '$lib/Utils/GenerationUtil';
 	import { T, useTask, useThrelte } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
+	import { OrbitControls, Stars } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
 	import Cube from './Shape/Shape.svelte';
 	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
@@ -18,7 +18,7 @@
 	export let currentTool: 'shovel' | 'flag';
 	export let estimatedBombsRemaining: number;
 	export let cube: CubeType;
-	const { renderStage, camera, renderer, scene } = useThrelte()
+	const { renderStage, camera, renderer, scene } = useThrelte();
 
 	$: width = cube.getWidth();
 	$: height = cube.getHeight();
@@ -210,13 +210,13 @@
 		clientX: number,
 		clientY: number,
 		point: Vector3
-	) {		
+	) {
 		if (!isValidMouseMove(clientX, clientY)) return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
-		
+
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
-		
+
 		if (block.type === 'air') return;
 		if ($gameStore.startTime === null) {
 			//First click
@@ -225,11 +225,11 @@
 			$gameStore.startTime = Date.now();
 			updateTime();
 		}
-		
+
 		if (currentTool === 'flag') {
 			return handleRightClick(pos, clientX, clientY, point);
 		}
-		
+
 		//Left click
 		if (block.isFlagged) return;
 		if (block.type === 'bomb') {
@@ -434,22 +434,25 @@
 
 	let lastImageTime = 0;
 	const screenShake = new ScreenShake();
-	useTask(() => {
-		screenShake.update(camera.current);
-		renderer.render(scene, camera.current);
-		if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
-			if($imageStore.processesingGameOverImage) return;
-			takeImageOfCube(true);
-			if (!screenShake.isActive() && !$gameStore.isGameWon)
-				screenShake.shake(camera.current, new Vector3(-0.5, 0, 0.5), 250);
-		} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
-			if (Date.now() - lastImageTime > 1000) {
-				console.log('Taking image');
-				takeImageOfCube(false);
-				lastImageTime = Date.now();
+	useTask(
+		() => {
+			screenShake.update(camera.current);
+			renderer.render(scene, camera.current);
+			if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
+				if ($imageStore.processesingGameOverImage) return;
+				takeImageOfCube(true);
+				if (!screenShake.isActive() && !$gameStore.isGameWon)
+					screenShake.shake(camera.current, new Vector3(-0.5, 0, 0.5), 250);
+			} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
+				if (Date.now() - lastImageTime > 1000) {
+					console.log('Taking image');
+					takeImageOfCube(false);
+					lastImageTime = Date.now();
+				}
 			}
-		}
-	}, { stage: renderStage, autoInvalidate: false });
+		},
+		{ stage: renderStage, autoInvalidate: false }
+	);
 	let dist = 0;
 	$: {
 		if (width !== undefined || height !== undefined || depth !== undefined) {
@@ -457,12 +460,14 @@
 		}
 	}
 </script>
+
 <!--FUTURE NOTE: Bug in threlte/extras/OrbitControls with three version ^0.68.0. Fix is already pulled into main but not published to NPM at time of writing. Please update threejs & thretle/extras when possible -->
 <InteractiveScene>
 	<T.Cache enabled={true} />
+	<Stars speed={1} lightness={0.15} saturation={0} />
 	<T.PerspectiveCamera makeDefault position={[dist, dist, dist]} near={0.01} far={1000}>
 		<OrbitControls
-			enablePan={false} 
+			enablePan={false}
 			enableZoom={true}
 			enableRotate={true}
 			autoRotate={!isPlaying}
@@ -476,5 +481,11 @@
 	<T.DirectionalLight castShadow position={[3, 10, 10]} />
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
-	<Cube bind:shape={cube.cube} {handleLeftClick} {handleRightClick} {handlePointerDown} {isMoving} />
+	<Cube
+		bind:shape={cube.cube}
+		{handleLeftClick}
+		{handleRightClick}
+		{handlePointerDown}
+		{isMoving}
+	/>
 </InteractiveScene>

@@ -2,7 +2,15 @@
 	import { createToast as createToastBase } from '$lib/Utils/ToastUtil';
 	import { Drawer, getDrawerStore, getToastStore } from '@skeletonlabs/skeleton';
 	import { ShareDrawer, isShareDrawer } from 'skeleton-share';
-	import { EmailProvider, FacebookProvider, LinkedInProvider, MessengerProvider, WhatsAppProvider, XProvider, type ShareProvider } from 'skeleton-share/providers';
+	import {
+		EmailProvider,
+		FacebookProvider,
+		LinkedInProvider,
+		MessengerProvider,
+		WhatsAppProvider,
+		XProvider,
+		type ShareProvider
+	} from 'skeleton-share/providers';
 	import { PUBLIC_FACEBOOK_APP_ID } from '$env/static/public';
 	const drawerStore = getDrawerStore();
 	const toastStore = getToastStore();
@@ -29,7 +37,6 @@
 			on:clipboard-error={() => createToast('Failed to copy to clipboard', true)}
 			on:download-success={() => createToast('Downloaded!')}
 			on:social-share={(e) => createToast(`Shared via ${e.detail.provider}!`)}
-			
 		/>
 	{:else}
 		<!-- Fallback Error -->

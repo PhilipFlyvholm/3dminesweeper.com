@@ -1,4 +1,3 @@
-
 import type { Block } from '$lib/Cube';
 import { calculate3BV } from '$lib/Utils/GenerationUtil';
 import { describe, expect, it } from 'vitest';
@@ -6,7 +5,16 @@ import { describe, expect, it } from 'vitest';
 const addBlock = (cube: Block[][][], x: number, y: number, z: number) => {
 	if (!cube[x]) cube[x] = [];
 	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = { type: 'block', x, y, z, isFlagged: false, isSweeped: false, facing: 'up', texture:  "none"};
+	cube[x][y][z] = {
+		type: 'block',
+		x,
+		y,
+		z,
+		isFlagged: false,
+		isSweeped: false,
+		facing: 'up',
+		texture: 'none'
+	};
 };
 const addAir = (cube: Block[][][], x: number, y: number, z: number) => {
 	if (!cube[x]) cube[x] = [];
@@ -16,7 +24,16 @@ const addAir = (cube: Block[][][], x: number, y: number, z: number) => {
 const addBomb = (cube: Block[][][], x: number, y: number, z: number) => {
 	if (!cube[x]) cube[x] = [];
 	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = { type: 'bomb', x, y, z, isFlagged: false, isSweeped: false, facing: 'up', texture:  "none" };
+	cube[x][y][z] = {
+		type: 'bomb',
+		x,
+		y,
+		z,
+		isFlagged: false,
+		isSweeped: false,
+		facing: 'up',
+		texture: 'none'
+	};
 };
 
 describe('3bv test', () => {
@@ -34,8 +51,7 @@ describe('3bv test', () => {
 				}
 			}
 		}
-		
-	
+
 		const count = calculate3BV(cube);
 		expect(count).toBe(1);
 	});
@@ -56,8 +72,7 @@ describe('3bv test', () => {
 
 		addBomb(cube, 0, 0, 0);
 		addBomb(cube, 1, 0, 0);
-		
-	
+
 		const count = calculate3BV(cube);
 		expect(count).toBe(2);
 	});
@@ -78,8 +93,7 @@ describe('3bv test', () => {
 
 		addBomb(cube, 0, 0, 0);
 		addBomb(cube, 2, 2, 2);
-		
-	
+
 		const count = calculate3BV(cube);
 		expect(count).toBe(1);
 	});
@@ -99,9 +113,8 @@ describe('3bv test', () => {
 		}
 
 		addBomb(cube, 0, 0, 0);
-		addBomb(cube, 2, 0,0);
-		
-	
+		addBomb(cube, 2, 0, 0);
+
 		const count = calculate3BV(cube);
 		expect(count).toBe(2);
 	});

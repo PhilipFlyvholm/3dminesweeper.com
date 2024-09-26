@@ -33,7 +33,9 @@
 <style>
 	:global(h1, .vt323) {
 		font-family: 'VT323', 'Alegreya Sans', sans-serif;
-		text-shadow: 2px 2px 0px #744aa1, 3px 3px 0px #744aa1;
+		text-shadow:
+			2px 2px 0px #744aa1,
+			3px 3px 0px #744aa1;
 	}
 
 	:global(h2, h3) {

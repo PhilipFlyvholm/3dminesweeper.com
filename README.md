@@ -1,4 +1,5 @@
 # 3DMinesweeper.com
+
 ![Alt text](static/favicon.png)
 
 Welcome to 3D Minesweeper! This readme file provides essential information and instructions on how to play this classic puzzle game with a twist.
@@ -32,9 +33,9 @@ To play 3D Minesweeper, simply visit [3dminesweeper.com](https://www.3dminesweep
 - The game is played on a three-dimensional grid of tiles.
 - Some tiles contain mines, while others do not.
 - Left-click on a tile to reveal its content:
-    - If it's a mine, the game is lost.
-    - If it's a number, it indicates the number of adjacent mines.
-    - If it's an empty tile, it will reveal an area without adjacent mines.
+  - If it's a mine, the game is lost.
+  - If it's a number, it indicates the number of adjacent mines.
+  - If it's an empty tile, it will reveal an area without adjacent mines.
 - Right-click on a tile to mark it as a mine.
 - The game is won when all non-mine tiles are revealed, and it's lost when you uncover a mine.
 
@@ -51,5 +52,5 @@ I hope you enjoy playing 3D Minesweeper! If you have any feedback, encounter iss
 Thank you for playing, and happy Minesweeping!
 
 ## 7. License
-See [LICENSE](LICENSE)
 
+See [LICENSE](LICENSE)

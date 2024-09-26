@@ -21,7 +21,6 @@ export type Block =
 
 export type NonAirBlock = Exclude<Block, { type: 'air' }>;
 
-
 export class Cube {
 	cube: BlockMap;
 	bombs: number;

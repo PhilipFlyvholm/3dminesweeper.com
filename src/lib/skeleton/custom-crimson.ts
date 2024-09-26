@@ -28,7 +28,6 @@ const customCrimson = {
 		'--color-primary-800': '45 29 63',
 		'--color-primary-900': '23 14 31',
 
-
 		'--color-secondary-50': '227 237 243',
 		'--color-secondary-100': '218 231 239',
 		'--color-secondary-200': '209 225 235',

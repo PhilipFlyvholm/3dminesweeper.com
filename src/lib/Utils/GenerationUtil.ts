@@ -17,7 +17,6 @@ export function calculate3BV(shape: BlockMap) {
 	const isEmpty = ({ x, y, z }: Vector3) => getBombsAround(x, y, z, shape) === 0;
 
 	const floodFillMark = (initalX: number, initalY: number, initalZ: number) => {
-		
 		const localQueue: Vector3[] = [{ x: initalX, y: initalY, z: initalZ }];
 		while (localQueue.length > 0) {
 			const head = localQueue.pop();
@@ -43,7 +42,6 @@ export function calculate3BV(shape: BlockMap) {
 				}
 			}
 		}
-		
 	};
 	const coords = shape.keys().toArray();
 	for (const coord of coords) {
@@ -203,7 +201,7 @@ export function addBombs(
 	const seededRandom = new Srand(seed);
 	let estimatedBombsRemaining = 0;
 	console.log(shape.keys, shape.has);
-	
+
 	const possiblePositions = shape.keys().toArray();
 	if (possiblePositions.length === 0) throw new Error('Cube is empty');
 	if (possiblePositions.length <= bombsAmount)

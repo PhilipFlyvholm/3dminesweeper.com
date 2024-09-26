@@ -31,15 +31,6 @@
 	afterUpdate(() =>
 		console.log('Rerendering cube: ' + counter++ + 'took ' + (performance.now() - time) + 'ms')
 	);
-
-	function generateKey(coord: Vector3, block: Block) {
-		let s = `${coord.x},${coord.y},${coord.z},${block.type}`;
-		if (block.type !== 'air') {
-			s += block.isFlagged ? 'flagged' : 'notflagged';
-			s += block.isSweeped ? 'revealed' : 'not';
-		}
-		return s;
-	}
 </script>
 
 <T.Group
@@ -64,8 +55,8 @@
 		<p>loading...</p>
 		<T.BoxGeometry args={[1, 1, 1]} />
 	{:then textures}
-		{#key shape.size}
-			{#if textures && textures.size !== 0}
+		{#if textures && textures.size !== 0}
+			{#key shape.size}
 				<CubeInstances textures={convertMapToObjectArray(textures)}>
 					{#each shape as [coord, block]}
 						{#if block.type !== 'air'}
@@ -75,8 +66,8 @@
 						{/if}
 					{/each}
 				</CubeInstances>
-			{/if}
-		{/key}
+			{/key}
+		{/if}
 	{:catch error}
 		<!-- promise was rejected -->
 		<p>Something went wrong: {error.message}</p>

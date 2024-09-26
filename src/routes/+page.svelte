@@ -4,18 +4,18 @@
 
 <section class=" my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">
 	<h1 class="h1 text-center p-0 vt323 text-5xl">3D Minesweeper</h1>
-	
-	<p class="text-center font-bold mt-1">Feeling like Minesweeper is too easy? Try playing Minesweeper in 3D!</p>
+
+	<p class="text-center font-bold mt-1">
+		Feeling like Minesweeper is too easy? Try playing Minesweeper in 3D!
+	</p>
 	<p class="text-center font-bold mt-3 text-2xl">Select a difficulty</p>
 	<div class="flex flex-wrap justify-between w-full mb-1">
-		<PlayButton size={"3x3x3"} text="Beginner (3x3x3)"/>
-		<PlayButton size={"5x5x5"} text="Intermediate (5x5x5)" />
-		<PlayButton size={"10x10x10"} text="Expert (10x10x10)" />
+		<PlayButton size={'3x3x3'} text="Beginner (3x3x3)" />
+		<PlayButton size={'5x5x5'} text="Intermediate (5x5x5)" />
+		<PlayButton size={'10x10x10'} text="Expert (10x10x10)" />
 	</div>
 </section>
-<section
-	class="card py-5 px-5 md:px-10 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto"
->
+<section class="card py-5 px-5 md:px-10 my-5 w-[90%] md:w-[80%] lg:w-[70%] m-auto">
 	<h2 class="h2 text-center">How to play 3D Minesweeper</h2>
 	<p class="md:text-center">
 		Welcome to the exciting world of 3D Minesweeper! This guide will walk you through the rules and

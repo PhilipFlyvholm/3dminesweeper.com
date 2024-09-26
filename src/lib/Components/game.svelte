@@ -131,7 +131,7 @@
 
 				{#if cube && cube.cube}
 					<Canvas>
-						<PerfMonitor anchorX={'left'} anchorY={'bottom'} logsPerSecond={30}/>
+						<PerfMonitor anchorX={'left'} anchorY={'bottom'} logsPerSecond={30} />
 						<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
 					</Canvas>
 				{/if}

@@ -30,13 +30,13 @@
 		'Warning: This game contains explosive levels of excitement!',
 		"There's no mine too deep for a fearless sweeper like you!"
 	];
-
-    
 </script>
 
 <p class="loading text-lg text-center">{textFrames[frame]}</p>
 {#if enableRandomLoadingText}
-    <p class="text-center">{randomLoadingMessages[Math.floor(Math.random() * randomLoadingMessages.length)]}</p>
+	<p class="text-center">
+		{randomLoadingMessages[Math.floor(Math.random() * randomLoadingMessages.length)]}
+	</p>
 {/if}
 <div class="bar-wrapper relative h-[10px] w-[33.33%] border-secondary-500">
 	<div class="bar bg-primary-500 h-full" style="width: {progress}%" />
