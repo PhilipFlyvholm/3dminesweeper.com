@@ -8,7 +8,7 @@
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
-	import Cube from './Cube/Cube.svelte';
+	import Cube from './Shape/Shape.svelte';
 	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
 	import { Vector3 } from 'three';
 	import { getFaceFromPoint } from '$lib/Utils/FaceUtil';
@@ -210,11 +210,13 @@
 		clientX: number,
 		clientY: number,
 		point: Vector3
-	) {
+	) {		
 		if (!isValidMouseMove(clientX, clientY)) return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
+		
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
+		
 		if (block.type === 'air') return;
 		if ($gameStore.startTime === null) {
 			//First click
@@ -223,9 +225,11 @@
 			$gameStore.startTime = Date.now();
 			updateTime();
 		}
+		
 		if (currentTool === 'flag') {
 			return handleRightClick(pos, clientX, clientY, point);
 		}
+		
 		//Left click
 		if (block.isFlagged) return;
 		if (block.type === 'bomb') {
@@ -472,5 +476,5 @@
 	<T.DirectionalLight castShadow position={[3, 10, 10]} />
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
-	<Cube bind:cube={cube.cube} {handleLeftClick} {handleRightClick} {handlePointerDown} {isMoving} />
+	<Cube bind:shape={cube.cube} {handleLeftClick} {handleRightClick} {handlePointerDown} {isMoving} />
 </InteractiveScene>

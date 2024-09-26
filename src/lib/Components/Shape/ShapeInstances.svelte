@@ -17,7 +17,7 @@
 		range={$gameStore.size.blockAmount}
 		frustumCulled={false}
 	>
-		<T.MeshBasicMaterial map={currentTexture.texture} />
+		<T.MeshBasicMaterial map={currentTexture.texture}/>
 		<T.BoxGeometry args={[1, 1, 1]} />
 		<svelte:self textures={childTextures}>
 			<slot />

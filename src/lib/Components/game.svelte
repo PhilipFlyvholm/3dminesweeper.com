@@ -16,6 +16,7 @@
 	import Loading from './Loading.svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
 	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
+	import { PerfMonitor } from '@threlte/extras';
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
@@ -39,7 +40,7 @@
 		currentTool = 'shovel';
 
 		cube = new Cube(width, height, depth);
-		console.log('Initializing cube', width, height, depth, cube.cube.length);
+		console.log('Initializing cube', width, height, depth, cube.cube.keys().toArray().length);
 
 		estimatedBombsRemaining = cube.bombs;
 		$gameStore = {
@@ -130,6 +131,7 @@
 
 				{#if cube && cube.cube}
 					<Canvas>
+						<PerfMonitor anchorX={'left'} anchorY={'bottom'} logsPerSecond={30}/>
 						<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
 					</Canvas>
 				{/if}
