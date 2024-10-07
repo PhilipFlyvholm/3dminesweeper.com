@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Block } from '$lib/Cube';
+	import { BlockToString, type Block } from '$lib/Cube';
 	import { loadTexturesIfUnloaded } from '$lib/Textures';
 	import type { BoxLeftClick, BoxPointerDown, BoxRightClick } from '$lib/Types/BlockTypes';
 	import { T } from '@threlte/core';
@@ -14,6 +14,7 @@
 	export let handleRightClick: BoxRightClick;
 	export let handlePointerDown: BoxPointerDown;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
+	import { shapeInspectorStore } from '$lib/Stores/DevStore';
 
 	function convertMapToObjectArray(
 		map: Map<string, Texture>
@@ -62,7 +63,9 @@
 						{#if block.type !== 'air'}
 							{@const randomFlagRotation =
 								((coord.x + coord.y + coord.z) / shape.size) * Math.PI * 2}
-							<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged} />
+							{#if $shapeInspectorStore.enableSplit == false || block.x > $shapeInspectorStore.splitAt}
+								<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged || block.type == "bomb"} />
+							{/if}
 						{/if}
 					{/each}
 				</CubeInstances>

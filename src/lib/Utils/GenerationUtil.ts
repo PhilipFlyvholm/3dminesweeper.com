@@ -1,3 +1,4 @@
+import type { Block } from '$lib/Cube';
 import { BlockMap, HashVector3, type Vector3 } from '$lib/Utils/BlockMap';
 import Srand from 'seeded-rand';
 
@@ -85,8 +86,13 @@ export function getBombsAround(x: number, y: number, z: number, shape: BlockMap)
 	return bombs;
 }
 
+export type CreationResult = {
+	map: BlockMap;
+	size: { width: number; height: number; depth: number; blockAmount: number }; // Note: Maybe should be called VisualSize
+};
+
 /**This creates a cube with no core and no bombs */
-export function createPlainCube(width: number, height: number, depth: number): BlockMap {
+export function createPlainCube(width: number, height: number, depth: number): CreationResult {
 	const cube: BlockMap = new BlockMap();
 	for (let x = 0; x < width; x++) {
 		for (let y = 0; y < height; y++) {
@@ -127,63 +133,81 @@ export function createPlainCube(width: number, height: number, depth: number): B
 			}
 		}
 	}
-	return cube;
+	return {map:cube, size: { width, height, depth, blockAmount: cube.size }};
+}
+
+export function createShapeTest(): CreationResult {
+	const shape: BlockMap = new BlockMap();
+	shape.set(
+		{ x: 0, y: 0, z: 0 },
+		{
+			x: 0,
+			y: 0,
+			z: 0,
+			type: 'block',
+			isFlagged: false,
+			isSweeped: false,
+			facing: 'up',
+			texture: 'block_default'
+		}
+	);
+	shape.set(
+		{ x: 0, y: 1, z: 0 },
+		{
+			x: 0,
+			y: 1,
+			z: 0,
+			type: 'block',
+			isFlagged: false,
+			isSweeped: false,
+			facing: 'left',
+			texture: 'block_default'
+		}
+	);
+	return {map:shape, size: { width: 1, height: 2, depth: 1, blockAmount: shape.size }};
 }
 
 /**This function creates a sphere with no core and no boms */
-export function createPlainSphere(radius: number): BlockMap {
+export function createPlainSphere(radius: number): CreationResult {
+	const offset = 0.5;
+	const center = { x: radius, y: radius, z: radius };
 	const shape: BlockMap = new BlockMap();
-	for (let x = -radius; x <= radius; x++) {
-		for (let y = -radius; y <= radius; y++) {
-			for (let z = -radius; z <= radius; z++) {
-				if (x ** 2 + y ** 2 + z ** 2 <= radius ** 2) {
-					shape.set(
-						{ x: x + radius, y: y + radius, z: z + radius },
-						{
-							x: x + radius,
-							y: y + radius,
-							z: z + radius,
-							type: 'block',
-							isFlagged: false,
-							isSweeped: false,
-							facing: 'up',
-							texture: 'block_default'
-						}
-					);
-					/*
-					if (isOutline(x + radius, y + radius, z + radius, radius * 2, radius * 2, radius * 2)) {
-						const facing = (() => {
-							if (x === -radius) return 'left';
-							else if (x === radius) return 'right';
-							else if (y === -radius) return 'down';
-							else if (y === radius) return 'up';
-							else if (z === -radius) return 'front';
-							else return 'back';
-						})();
+	const maxR2 = radius ** 2;
+	const minR2 = (radius - 1) ** 2;
+	for (let x = 0; x <= radius*2; x++) {
+		for (let y = 0; y <= radius*2; y++) {
+			for (let z = 0; z <= radius*2;   z++) {
+				const distance = (x - center.x) ** 2 + (y - center.y) ** 2 + (z - center.z) ** 2;
 
-						cube[x + radius][y + radius][z + radius] = {
-							x: x + radius,
-							y: y + radius,
-							z: z + radius,
-							type: 'block',
-							isFlagged: false,
-							isSweeped: false,
-							facing: facing,
-							texture: 'block_default',
-						};
-					} else {
-						cube[x + radius][y + radius][z + radius] = {
-							x: x + radius,
-							y: y + radius,
-							z: z + radius,
-							type: 'air'
-						};
-					}*/
+				if (distance <= maxR2 && distance > minR2) {
+					const facing = (() => {
+						// Get the dirction this block is facing from the center using vectors
+						const vector = { x: x - center.x, y: y - center.y, z: z - center.z };
+						const xAbs = Math.abs(vector.x);
+						const yAbs = Math.abs(vector.y);
+						const zAbs = Math.abs(vector.z);
+						if (xAbs > yAbs && xAbs > zAbs) return vector.x > 0 ? 'right' : 'left';
+						else if (yAbs > xAbs && yAbs > zAbs) return vector.y > 0 ? 'up' : 'down';
+						else return vector.z > 0 ? 'back' : 'front';
+					})();
+
+					const block:Block = {
+						y: y,
+						x: x,
+						z: z,
+						type: 'block',
+						isFlagged: false,
+						isSweeped: false,
+						facing: facing,
+						texture: 'block_default'
+					};
+
+					shape.set({ x: block.x, y: block.y, z: block.z }, block);
 				}
 			}
 		}
 	}
-	return shape;
+	return {map:shape, size: { width: radius*2, height: radius*2, depth: radius*2, blockAmount: shape.size }};
 }
 
 function isOutline(x: number, y: number, z: number, width: number, height: number, depth: number) {
@@ -200,7 +224,6 @@ export function addBombs(
 	const shape = new BlockMap(initalShape.entries().toArray());
 	const seededRandom = new Srand(seed);
 	let estimatedBombsRemaining = 0;
-	console.log(shape.keys, shape.has);
 
 	const possiblePositions = shape.keys().toArray();
 	if (possiblePositions.length === 0) throw new Error('Cube is empty');

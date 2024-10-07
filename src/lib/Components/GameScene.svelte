@@ -24,15 +24,10 @@
 	$: height = cube.getHeight();
 	$: depth = cube.getDepth();
 	function isComplete() {
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < height; y++) {
-				for (let z = 0; z < depth; z++) {
-					const block = cube.getBlock(x, y, z);
-					if (!block) continue;
-					if (block.type === 'bomb' && block.isSweeped) return false;
-					if (block.type === 'block' && !block.isSweeped) return false;
-				}
-			}
+		for(let entry of cube.cube){
+			const b = entry[1];
+			if(b.type === 'bomb' && !b.isSweeped) return false;
+			if(b.type === 'block' && b.isSweeped) return false;
 		}
 		return true;
 	}

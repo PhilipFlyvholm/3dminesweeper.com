@@ -1,5 +1,5 @@
 import type { BlockMap } from '$lib/Utils/BlockMap';
-import { addBombs, createPlainCube, createPlainSphere } from './Utils/GenerationUtil';
+import { addBombs, createPlainCube, createPlainSphere, createShapeTest, type CreationResult } from './Utils/GenerationUtil';
 
 export type Block =
 	| {
@@ -19,6 +19,11 @@ export type Block =
 			type: 'air';
 	  };
 
+export function BlockToString(block: Block) {
+	if (block.type === 'air') return 'air';
+	return `${block.x} ${block.y} ${block.z}`;
+}
+
 export type NonAirBlock = Exclude<Block, { type: 'air' }>;
 
 export class Cube {
@@ -34,18 +39,16 @@ export class Cube {
 	difficultyListeners: ((difficulty: number) => void)[] = [];
 
 	constructor(width: number, height: number, depth: number) {
-		const blockAmount =
-			width * height * depth -
-			Math.max(width - 2, 0) * Math.max(height - 2, 0) * Math.max(depth - 2, 0);
+		/*
+			FIXME: LIST OF ISSUES
+			- createPlainSphere is not (100%) hollow!
+			- Some of "pointy" blocks of the sphere are not clickable (Only two of them)
+		*/
+		const ShapeCreationResult:CreationResult = createPlainSphere(width);
+		const blockAmount = ShapeCreationResult.size.blockAmount;
 		this.bombs = Math.min(blockAmount - 1, Math.max(Math.floor(blockAmount / 10), 1));
-		this.cube = createPlainCube(width, height, depth);
-
-		this.size = {
-			width,
-			height,
-			depth,
-			blockAmount
-		};
+		this.size = ShapeCreationResult.size
+		this.cube = ShapeCreationResult.map;
 	}
 
 	getWidth() {

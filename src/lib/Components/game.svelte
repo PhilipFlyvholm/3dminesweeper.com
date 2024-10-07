@@ -17,6 +17,7 @@
 	import DataOverlay from './overlays/DataOverlay.svelte';
 	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
 	import { PerfMonitor } from '@threlte/extras';
+	import ShapeInspectorOverlay from './overlays/ShapeInspectorOverlay.svelte';
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
@@ -163,6 +164,7 @@
 		>
 		{new Date(timePlayed).toISOString().substring(11, 19)}
 	</DataOverlay>
+	<ShapeInspectorOverlay/>
 	<GameOver restart={() => init()} {isMoving} />
 	{#if mounted && $tutorialSeen === 'false'}
 		<TutorialOverlay />
