@@ -43,6 +43,7 @@ export class Cube {
 			FIXME: LIST OF ISSUES
 			- createPlainSphere is not (100%) hollow!
 			- Some of "pointy" blocks of the sphere are not clickable (Only two of them)
+			- REMEMBER TO REMOVE DEV CODE (ShapeInspector and Always showing bombs)
 		*/
 		const ShapeCreationResult:CreationResult = createPlainSphere(width);
 		const blockAmount = ShapeCreationResult.size.blockAmount;
