@@ -92,7 +92,7 @@
 				for (let z = 0; z < depth; z++) {
 					const block = cube.getBlock(x, y, z);
 					if (!block) continue;
-					if (block.type == 'air' || block.isSweeped) continue;
+					if (block.isSweeped) continue;
 					if (block.isFlagged) {
 						if (block.type === 'bomb') continue;
 						block.isFlagged = false;
@@ -161,7 +161,7 @@
 					const finalY = pos.y + y;
 					const finalZ = pos.z + z;
 					const localBlock = cube.getBlock(finalX, finalY, finalZ);
-					if (!localBlock || localBlock.type === 'air') continue;
+					if (!localBlock) continue;
 					if (localBlock.type === 'bomb') {
 						bombs++;
 					}
@@ -177,7 +177,6 @@
 
 		$gameStore.clicks++;
 		for (const block of toUpdate) {
-			if (block.type === 'air') continue;
 			block.isSweeped = true;
 			cube.setBlock(block.x, block.y, block.z, block);
 			updateTexture(block);
@@ -206,13 +205,16 @@
 		clientY: number,
 		point: Vector3
 	) {
+		console.log('Left click', pos);
+		
 		if (!isValidMouseMove(clientX, clientY)) return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
-
+		
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		console.log('Block', block);
+		
 		if (!block) return;
 
-		if (block.type === 'air') return;
 		if ($gameStore.startTime === null) {
 			//First click
 			cube = cube.populate(pos);
@@ -257,7 +259,6 @@
 		if (!isValidMouseMove(clientX, clientY)) return;
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
-		if (block.type === 'air') return;
 		if (block.isSweeped) return;
 		if (block.isFlagged) {
 			block.isFlagged = false;
@@ -282,7 +283,7 @@
 			const pos = preReveal.pop();
 			if (!pos) continue;
 			const block = cube.getBlock(pos.x, pos.y, pos.z);
-			if (block && block.type !== 'air') {
+			if (block) {
 				updateTexture(block);
 				cube = cube.setBlock(pos.x, pos.y, pos.z, block);
 			}
@@ -294,7 +295,7 @@
 		const tmpPreReveal: { x: number; y: number; z: number }[] = [];
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 
-		if (!block || block.type === 'air') return;
+		if (!block) return;
 
 		if (block.type === 'block') {
 			if (block.isFlagged) return;
@@ -320,7 +321,7 @@
 		}
 		for (const pos of tmpPreReveal) {
 			const block = cube.getBlock(pos.x, pos.y, pos.z);
-			if (!block || block.type === 'air') continue;
+			if (!block) continue;
 			if (block.isSweeped) continue;
 			if (block.isFlagged) continue;
 			preReveal.push(pos);
@@ -347,7 +348,6 @@
 					if (finalZ < 0 || finalZ >= depth) continue;
 					const block = cube.getBlock(finalX, finalY, finalZ);
 					if (!block) continue;
-					if (block.type === 'air') continue;
 					if (block.type === 'bomb') continue;
 					if (block.isSweeped) continue;
 					if (block.isFlagged) continue;
@@ -366,7 +366,6 @@
 
 	function getTextureForBlock(block: Block) {
 		if (!block) return;
-		if (block.type === 'air') return;
 		if (block.isFlagged) return 'block_flag';
 		const { x, y, z } = block;
 		if (block.isSweeped) {
@@ -387,7 +386,6 @@
 	}
 
 	function updateTexture(block: Block) {
-		if (block.type === 'air') return;
 		const newTexture = getTextureForBlock(block);
 		if (!newTexture) return;
 		block.texture = newTexture;

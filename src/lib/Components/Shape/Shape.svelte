@@ -60,12 +60,14 @@
 			{#key shape.size}
 				<CubeInstances textures={convertMapToObjectArray(textures)}>
 					{#each shape as [coord, block]}
-						{#if block.type !== 'air'}
-							{@const randomFlagRotation =
-								((coord.x + coord.y + coord.z) / shape.size) * Math.PI * 2}
-							{#if $shapeInspectorStore.enableSplit == false || block.x > $shapeInspectorStore.splitAt}
-								<Box {block} {isMoving} {randomFlagRotation} isFlagged={block.isFlagged || block.type == "bomb"} />
-							{/if}
+						{@const randomFlagRotation = ((coord.x + coord.y + coord.z) / shape.size) * Math.PI * 2}
+						{#if $shapeInspectorStore.enableSplit == false || block.x > $shapeInspectorStore.splitAt}
+							<Box
+								{block}
+								{isMoving}
+								{randomFlagRotation}
+								isFlagged={block.isFlagged}
+							/>
 						{/if}
 					{/each}
 				</CubeInstances>

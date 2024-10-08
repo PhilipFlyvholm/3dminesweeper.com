@@ -1,6 +1,7 @@
 import type { Block } from '$lib/Cube';
 import { BlockMap, HashVector3, type Vector3 } from '$lib/Utils/BlockMap';
 import Srand from 'seeded-rand';
+import { Vector3 as TVector3 } from 'three';
 
 /*
 	Count3BV is a function that calculate the 3BV of a shape
@@ -119,21 +120,11 @@ export function createPlainCube(width: number, height: number, depth: number): C
 							texture: 'block_default'
 						}
 					);
-				} else {
-					cube.set(
-						{ x, y, z },
-						{
-							x,
-							y,
-							z,
-							type: 'air'
-						}
-					);
 				}
 			}
 		}
 	}
-	return {map:cube, size: { width, height, depth, blockAmount: cube.size }};
+	return { map: cube, size: { width, height, depth, blockAmount: cube.size } };
 }
 
 export function createShapeTest(): CreationResult {
@@ -164,51 +155,103 @@ export function createShapeTest(): CreationResult {
 			texture: 'block_default'
 		}
 	);
-	return {map:shape, size: { width: 1, height: 2, depth: 1, blockAmount: shape.size }};
+	return { map: shape, size: { width: 1, height: 2, depth: 1, blockAmount: shape.size } };
 }
 
-/**This function creates a sphere with no core and no boms */
 export function createPlainSphere(radius: number): CreationResult {
-	const offset = 0.5;
-	const center = { x: radius, y: radius, z: radius };
+	const center = { x: radius - 0.5, y: radius - 0.5, z: radius - 0.5 };
 	const shape: BlockMap = new BlockMap();
-	const maxR2 = radius ** 2;
-	const minR2 = (radius - 1) ** 2;
-	for (let x = 0; x <= radius*2; x++) {
-		for (let y = 0; y <= radius*2; y++) {
-			for (let z = 0; z <= radius*2;   z++) {
-				const distance = (x - center.x) ** 2 + (y - center.y) ** 2 + (z - center.z) ** 2;
+	const R2 = radius ** 2;
+	const epsilon = R2 - (radius - 0.5) ** 2;
+	const setBlock = (x: number, y: number, z: number) => {
+		const facing = (() => {
+			// Get the direction this block is facing from the center using vectors
+			const vector = { x: x - center.x, y: y - center.y, z: z - center.z };
+			const xAbs = Math.abs(vector.x);
+			const yAbs = Math.abs(vector.y);
+			const zAbs = Math.abs(vector.z);
+			if (xAbs > yAbs && xAbs > zAbs) return vector.x > 0 ? 'right' : 'left';
+			else if (yAbs > xAbs && yAbs > zAbs) return vector.y > 0 ? 'up' : 'down';
+			else return vector.z > 0 ? 'back' : 'front';
+		})();
 
-				if (distance <= maxR2 && distance > minR2) {
-					const facing = (() => {
-						// Get the dirction this block is facing from the center using vectors
-						const vector = { x: x - center.x, y: y - center.y, z: z - center.z };
-						const xAbs = Math.abs(vector.x);
-						const yAbs = Math.abs(vector.y);
-						const zAbs = Math.abs(vector.z);
-						if (xAbs > yAbs && xAbs > zAbs) return vector.x > 0 ? 'right' : 'left';
-						else if (yAbs > xAbs && yAbs > zAbs) return vector.y > 0 ? 'up' : 'down';
-						else return vector.z > 0 ? 'back' : 'front';
-					})();
+		const block: Block = {
+			y: y,
+			x: x,
+			z: z,
+			type: 'block',
+			isFlagged: false,
+			isSweeped: false,
+			facing: facing,
+			texture: 'block_default'
+		};
+		shape.set({ x: block.x, y: block.y, z: block.z }, block);
+	}
 
-					const block:Block = {
-						y: y,
-						x: x,
-						z: z,
-						type: 'block',
-						isFlagged: false,
-						isSweeped: false,
-						facing: facing,
-						texture: 'block_default'
-					};
-
-					shape.set({ x: block.x, y: block.y, z: block.z }, block);
+	for(let x = -radius; x <= radius; x++) {
+		for(let y = -radius; y <= radius; y++) {
+			for(let z = -radius; z <= radius; z++) {
+				const distanceSquared = x**2 + y**2 + z**2;
+				if(R2 - epsilon <= distanceSquared && distanceSquared <= R2 + epsilon) {
+					setBlock(x + radius, y + radius, z + radius);
 				}
 			}
 		}
 	}
-	return {map:shape, size: { width: radius*2, height: radius*2, depth: radius*2, blockAmount: shape.size }};
+	const outlineOnlyShape = excludeCore(shape, {x: radius, y: radius, z: radius });
+
+	return {
+		map: outlineOnlyShape,
+		size: { width: radius * 2, height: radius * 2, depth: radius * 2, blockAmount: outlineOnlyShape.size }
+	};
 }
+
+function excludeCore(shape: BlockMap, center: Vector3){
+	const newShape = new BlockMap()
+	const queue = [center];
+	const visited = new Set<string>();
+	const airBlocks = new Set<string>();
+	while(queue.length > 0){
+		const head = queue.pop();
+		if(!head) continue;
+		const {x, y, z}:Vector3 = head;
+		const key = HashVector3(head);
+		if(visited.has(key)) continue;
+		visited.add(key);
+
+		const block = shape.get(head);
+		if(!block){
+			airBlocks.add(key);
+			queue.push({x: x + 1, y, z});
+			queue.push({x: x - 1, y, z});
+			queue.push({x, y: y + 1, z});
+			queue.push({x, y: y - 1, z});
+			queue.push({x, y, z: z + 1});
+			queue.push({x, y, z: z - 1});
+		}
+	}
+	
+	for(const [coord, block] of shape.entries()){
+		const around = [{x:-1,y: 0,z: 0}, {x: 1, y: 0, z: 0}, {x: 0, y: -1, z: 0}, {x: 0, y: 1, z: 0}, {x: 0, y: 0, z: -1}, {x: 0, y: 0, z: 1}];
+		let isValid = false;
+		for (let {x, y, z} of around){
+			x += coord.x;
+			y += coord.y;
+			z += coord.z;
+			const key = HashVector3({x, y, z});
+			if(airBlocks.has(key)) continue;
+			const block = shape.get({x, y, z});
+			if(!block){
+				isValid = true;
+				break;
+			}
+		}
+		if(isValid) newShape.set(coord, block);
+	}
+
+	return newShape;
+}
+
 
 function isOutline(x: number, y: number, z: number, width: number, height: number, depth: number) {
 	return x === 0 || x === width - 1 || y === 0 || y === height - 1 || z === 0 || z === depth - 1;

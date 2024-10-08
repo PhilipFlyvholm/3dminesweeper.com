@@ -16,8 +16,8 @@
 	import Loading from './Loading.svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
 	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
-	import { PerfMonitor } from '@threlte/extras';
-	import ShapeInspectorOverlay from './overlays/ShapeInspectorOverlay.svelte';
+	import ShapeInspectorOverlay from './overlays/dev/ShapeInspectorOverlay.svelte';
+	import DevOverlay from './overlays/dev/DevOverlay.svelte';
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
@@ -132,7 +132,7 @@
 
 				{#if cube && cube.cube}
 					<Canvas>
-						<PerfMonitor anchorX={'left'} anchorY={'bottom'} logsPerSecond={30} />
+						<DevOverlay />
 						<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
 					</Canvas>
 				{/if}
