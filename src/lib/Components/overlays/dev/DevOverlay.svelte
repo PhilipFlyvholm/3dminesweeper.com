@@ -5,7 +5,7 @@
 </script>
 
 <svelte:window
-	on:keypress={(e) => {		
+	on:keypress={(e) => {
 		if (e.key.toLowerCase() === 'd' && e.shiftKey && dev) {
 			$devMode = !$devMode;
 		}

@@ -3,29 +3,35 @@ import { calculate3BV } from '$lib/Utils/GenerationUtil';
 import { describe, expect, it } from 'vitest';
 
 const addBlock = (cube: BlockMap, x: number, y: number, z: number) => {
-	cube.set({x, y, z}, {
-		type: 'block',
-		x,
-		y,
-		z,
-		isFlagged: false,
-		isSweeped: false,
-		facing: 'up',
-		texture: 'none'
-	});
+	cube.set(
+		{ x, y, z },
+		{
+			type: 'block',
+			x,
+			y,
+			z,
+			isFlagged: false,
+			isSweeped: false,
+			facing: 'up',
+			texture: 'none'
+		}
+	);
 };
 
-const addBomb = (cube:BlockMap, x: number, y: number, z: number) => {
-	cube.set({x, y, z}, {
-		type: 'bomb',
-		x,
-		y,
-		z,
-		isFlagged: false,
-		isSweeped: false,
-		facing: 'up',
-		texture: 'none'
-	});
+const addBomb = (cube: BlockMap, x: number, y: number, z: number) => {
+	cube.set(
+		{ x, y, z },
+		{
+			type: 'bomb',
+			x,
+			y,
+			z,
+			isFlagged: false,
+			isSweeped: false,
+			facing: 'up',
+			texture: 'none'
+		}
+	);
 };
 
 describe('3bv test', () => {

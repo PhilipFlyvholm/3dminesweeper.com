@@ -16,11 +16,13 @@
 			return hits.slice(0, 1);
 		}
 	});
-	
 </script>
-<svelte:window on:keypress={e => {
-	if (e.key === 'i' && dev) {
-		$shapeInspectorStore.interactivityDebug = !$shapeInspectorStore.interactivityDebug;
-	}
-}} />
+
+<svelte:window
+	on:keypress={(e) => {
+		if (e.key === 'i' && dev) {
+			$shapeInspectorStore.interactivityDebug = !$shapeInspectorStore.interactivityDebug;
+		}
+	}}
+/>
 <slot />

@@ -24,10 +24,10 @@
 	$: height = cube.getHeight();
 	$: depth = cube.getDepth();
 	function isComplete() {
-		for(let entry of cube.cube){
+		for (let entry of cube.cube) {
 			const b = entry[1];
-			if(b.type === 'bomb' && b.isSweeped) return false;
-			if(b.type === 'block' && !b.isSweeped) return false;
+			if (b.type === 'bomb' && b.isSweeped) return false;
+			if (b.type === 'block' && !b.isSweeped) return false;
 		}
 		return true;
 	}
@@ -205,13 +205,13 @@
 		point: Vector3
 	) {
 		console.log('Left click', pos);
-		
+
 		if (!isValidMouseMove(clientX, clientY)) return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
-		
+
 		const block = cube.getBlock(pos.x, pos.y, pos.z);
 		console.log('Block', block);
-		
+
 		if (!block) return;
 
 		if ($gameStore.startTime === null) {

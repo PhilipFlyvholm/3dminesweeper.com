@@ -164,7 +164,7 @@
 		>
 		{new Date(timePlayed).toISOString().substring(11, 19)}
 	</DataOverlay>
-	<ShapeInspectorOverlay/>
+	<ShapeInspectorOverlay />
 	<GameOver restart={() => init()} {isMoving} />
 	{#if mounted && $tutorialSeen === 'false'}
 		<TutorialOverlay />

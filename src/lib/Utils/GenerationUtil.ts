@@ -5,7 +5,7 @@ import { Vector3 as TVector3 } from 'three';
 
 //Polyfill function
 async function IteratorToArray<T>(iterator: Iterable<T>) {
-	if(Array.fromAsync) return Array.fromAsync(iterator);
+	if (Array.fromAsync) return Array.fromAsync(iterator);
 	else return Array.from(iterator);
 }
 
@@ -43,7 +43,7 @@ export async function calculate3BV(shape: BlockMap) {
 						if (isMarked(finalCoords)) continue;
 
 						mark(finalCoords);
-						
+
 						if (isEmpty(finalCoords)) {
 							localQueue.push(finalCoords);
 						}
@@ -58,9 +58,8 @@ export async function calculate3BV(shape: BlockMap) {
 		const block = shape.get(coord);
 		if (!block) continue;
 		if (block.type !== 'block') continue;
-		
+
 		if (!isMarked(coord) && isEmpty(coord)) {
-			
 			mark(coord);
 			count++;
 
@@ -69,10 +68,9 @@ export async function calculate3BV(shape: BlockMap) {
 		}
 	}
 	for (const coord of coords) {
-		
 		const block = shape.get(coord);
 		if (!block) continue;
-		
+
 		if (isMarked(coord) || block.type === 'bomb') continue;
 		count++;
 	}
@@ -142,29 +140,35 @@ export function createPlainCube(width: number, height: number, depth: number): C
 export function createShapeTest(): CreationResult {
 	const shape: BlockMap = new BlockMap();
 	const addBlock = (cube: BlockMap, x: number, y: number, z: number) => {
-		cube.set({x, y, z}, {
-			type: 'block',
-			x,
-			y,
-			z,
-			isFlagged: false,
-			isSweeped: false,
-			facing: 'up',
-			texture: 'block_default'
-		});
+		cube.set(
+			{ x, y, z },
+			{
+				type: 'block',
+				x,
+				y,
+				z,
+				isFlagged: false,
+				isSweeped: false,
+				facing: 'up',
+				texture: 'block_default'
+			}
+		);
 	};
-	
-	const addBomb = (cube:BlockMap, x: number, y: number, z: number) => {
-		cube.set({x, y, z}, {
-			type: 'bomb',
-			x,
-			y,
-			z,
-			isFlagged: false,
-			isSweeped: false,
-			facing: 'up',
-			texture: 'block_default'
-		});
+
+	const addBomb = (cube: BlockMap, x: number, y: number, z: number) => {
+		cube.set(
+			{ x, y, z },
+			{
+				type: 'bomb',
+				x,
+				y,
+				z,
+				isFlagged: false,
+				isSweeped: false,
+				facing: 'up',
+				texture: 'block_default'
+			}
+		);
 	};
 	for (let x = 0; x < 3; x++) {
 		for (let y = 0; y < 3; y++) {
@@ -181,12 +185,12 @@ export function createShapeTest(): CreationResult {
 }
 
 export function createPlainSphere(radius: number): CreationResult {
-	const offset = .5;
-	const center = { x: radius - offset, y: radius-offset, z: radius-offset};
+	const offset = 0.5;
+	const center = { x: radius - offset, y: radius - offset, z: radius - offset };
 	const shape: BlockMap = new BlockMap();
 	const R2 = radius ** 2;
 	const epsilon = R2 - (radius - 0.5) ** 2;
-	const setBlock = ({x,y,z}:Vector3) => {
+	const setBlock = ({ x, y, z }: Vector3) => {
 		const facing = (() => {
 			// Get the direction this block is facing from the center using vectors
 			const vector = { x: x - center.x, y: y - center.y, z: z - center.z };
@@ -209,17 +213,21 @@ export function createPlainSphere(radius: number): CreationResult {
 			texture: 'block_default'
 		};
 		shape.set({ x: block.x, y: block.y, z: block.z }, block);
-	}
+	};
 
 	const innerAirBlocks = new Set<string>();
-	for(let x = -radius; x <= radius; x++) {
-		for(let y = -radius; y <= radius; y++) {
-			for(let z = -radius; z <= radius; z++) {
-				const distanceSquared = x**2 + y**2 + z**2;
-				const pos:Vector3 = {x: x + radius-offset, y: y + radius-offset, z: z + radius-offset}
-				if(R2 - epsilon <= distanceSquared && distanceSquared <= R2 + epsilon) {
+	for (let x = -radius; x <= radius; x++) {
+		for (let y = -radius; y <= radius; y++) {
+			for (let z = -radius; z <= radius; z++) {
+				const distanceSquared = x ** 2 + y ** 2 + z ** 2;
+				const pos: Vector3 = {
+					x: x + radius - offset,
+					y: y + radius - offset,
+					z: z + radius - offset
+				};
+				if (R2 - epsilon <= distanceSquared && distanceSquared <= R2 + epsilon) {
 					setBlock(pos);
-				}else if(distanceSquared <= R2 + epsilon){
+				} else if (distanceSquared <= R2 + epsilon) {
 					const key = HashVector3(pos);
 					innerAirBlocks.add(key);
 				}
@@ -230,33 +238,44 @@ export function createPlainSphere(radius: number): CreationResult {
 
 	return {
 		map: outlineOnlyShape,
-		size: { width: radius * 2, height: radius * 2, depth: radius * 2, blockAmount: outlineOnlyShape.size }
+		size: {
+			width: radius * 2,
+			height: radius * 2,
+			depth: radius * 2,
+			blockAmount: outlineOnlyShape.size
+		}
 	};
 }
 
-function excludeCore(shape: BlockMap, innerAirBlocks = new Set<string>()){
-	const newShape = new BlockMap()
-	for(const [coord, block] of shape.entries()){
-		const around = [{x:-1,y: 0,z: 0}, {x: 1, y: 0, z: 0}, {x: 0, y: -1, z: 0}, {x: 0, y: 1, z: 0}, {x: 0, y: 0, z: -1}, {x: 0, y: 0, z: 1}];
+function excludeCore(shape: BlockMap, innerAirBlocks = new Set<string>()) {
+	const newShape = new BlockMap();
+	for (const [coord, block] of shape.entries()) {
+		const around = [
+			{ x: -1, y: 0, z: 0 },
+			{ x: 1, y: 0, z: 0 },
+			{ x: 0, y: -1, z: 0 },
+			{ x: 0, y: 1, z: 0 },
+			{ x: 0, y: 0, z: -1 },
+			{ x: 0, y: 0, z: 1 }
+		];
 		let isValid = false;
-		for (let {x, y, z} of around){
+		for (let { x, y, z } of around) {
 			x += coord.x;
 			y += coord.y;
 			z += coord.z;
-			const key = HashVector3({x, y, z});
-			if(innerAirBlocks.has(key)) continue;
-			const block = shape.get({x, y, z});
-			if(!block){
+			const key = HashVector3({ x, y, z });
+			if (innerAirBlocks.has(key)) continue;
+			const block = shape.get({ x, y, z });
+			if (!block) {
 				isValid = true;
 				break;
 			}
 		}
-		if(isValid) newShape.set(coord, block);
+		if (isValid) newShape.set(coord, block);
 	}
 
 	return newShape;
 }
-
 
 function isOutline(x: number, y: number, z: number, width: number, height: number, depth: number) {
 	return x === 0 || x === width - 1 || y === 0 || y === height - 1 || z === 0 || z === depth - 1;
@@ -301,7 +320,7 @@ export async function addBombs(
 	}
 	const difficulty = await calculate3BV(shape);
 	console.log('Difficulty', difficulty);
-	
+
 	if (difficulty < bombsAmount + 3 && iteration < 50)
 		return addBombs(
 			initalShape,
