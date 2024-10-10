@@ -66,7 +66,7 @@
 								{block}
 								{isMoving}
 								{randomFlagRotation}
-								isFlagged={block.isFlagged}
+								isFlagged={block.isFlagged || block.type == 'bomb'}
 							/>
 						{/if}
 					{/each}

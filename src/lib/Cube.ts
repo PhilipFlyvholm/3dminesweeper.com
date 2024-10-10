@@ -35,7 +35,7 @@ export class Cube {
 	difficultyListeners: ((difficulty: number) => void)[] = [];
 
 	constructor(width: number, height: number, depth: number) {
-		const ShapeCreationResult: CreationResult = createPlainSphere(width);
+		const ShapeCreationResult: CreationResult = createPlainCube(width, height, depth);
 		const blockAmount = ShapeCreationResult.size.blockAmount;
 		this.bombs = Math.min(blockAmount - 1, Math.max(Math.floor(blockAmount / 10), 1));
 		this.size = ShapeCreationResult.size;
@@ -71,8 +71,8 @@ export class Cube {
 		return this;
 	}
 
-	populate(firstClick: { x: number; y: number; z: number }) {
-		const { cube, difficulty, seed, estimatedBombsRemaining } = addBombs(
+	async populate(firstClick: { x: number; y: number; z: number }) {
+		const { cube, difficulty, seed, estimatedBombsRemaining } = await addBombs(
 			this.cube,
 			firstClick,
 			this.bombs

@@ -1,11 +1,9 @@
-import type { Block } from '$lib/Cube';
+import { BlockMap } from '$lib/Utils/BlockMap';
 import { calculate3BV } from '$lib/Utils/GenerationUtil';
 import { describe, expect, it } from 'vitest';
 
-const addBlock = (cube: Block[][][], x: number, y: number, z: number) => {
-	if (!cube[x]) cube[x] = [];
-	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = {
+const addBlock = (cube: BlockMap, x: number, y: number, z: number) => {
+	cube.set({x, y, z}, {
 		type: 'block',
 		x,
 		y,
@@ -14,17 +12,11 @@ const addBlock = (cube: Block[][][], x: number, y: number, z: number) => {
 		isSweeped: false,
 		facing: 'up',
 		texture: 'none'
-	};
+	});
 };
-const addAir = (cube: Block[][][], x: number, y: number, z: number) => {
-	if (!cube[x]) cube[x] = [];
-	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = { type: 'air', x, y, z };
-};
-const addBomb = (cube: Block[][][], x: number, y: number, z: number) => {
-	if (!cube[x]) cube[x] = [];
-	if (!cube[x][y]) cube[x][y] = [];
-	cube[x][y][z] = {
+
+const addBomb = (cube:BlockMap, x: number, y: number, z: number) => {
+	cube.set({x, y, z}, {
 		type: 'bomb',
 		x,
 		y,
@@ -33,39 +25,33 @@ const addBomb = (cube: Block[][][], x: number, y: number, z: number) => {
 		isSweeped: false,
 		facing: 'up',
 		texture: 'none'
-	};
+	});
 };
 
 describe('3bv test', () => {
-	it('should equal one (3x3x3 without bomb)', () => {
-		const cube: Block[][][] = [];
+	it('should equal one (3x3x3 without bomb)', async () => {
+		const cube: BlockMap = new BlockMap();
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
 				for (let z = 0; z < 3; z++) {
-					if (x === 1 && y === 1 && z === 1) {
-						addAir(cube, x, y, z);
-					} else {
-						addBlock(cube, x, y, z);
-					}
+					if (x === 1 && y === 1 && z === 1) continue;
+					addBlock(cube, x, y, z);
 				}
 			}
 		}
 
-		const count = calculate3BV(cube);
+		const count = await calculate3BV(cube);
 		expect(count).toBe(1);
 	});
-	it('should equal two (3x3x3 without bomb two bombs next to each other)', () => {
-		const cube: Block[][][] = [];
+	it('should equal two (3x3x3 with two bombs next to each other)', async () => {
+		const cube: BlockMap = new BlockMap();
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
 				for (let z = 0; z < 3; z++) {
-					if (x === 1 && y === 1 && z === 1) {
-						addAir(cube, x, y, z);
-					} else {
-						addBlock(cube, x, y, z);
-					}
+					if (x === 1 && y === 1 && z === 1) continue;
+					addBlock(cube, x, y, z);
 				}
 			}
 		}
@@ -73,20 +59,17 @@ describe('3bv test', () => {
 		addBomb(cube, 0, 0, 0);
 		addBomb(cube, 1, 0, 0);
 
-		const count = calculate3BV(cube);
+		const count = await calculate3BV(cube);
 		expect(count).toBe(2);
 	});
-	it('should equal one (3x3x3 without bomb two bombs opposite to each other)', () => {
-		const cube: Block[][][] = [];
+	it('should equal one (3x3x3 with two bombs opposite to each other)', async () => {
+		const cube: BlockMap = new BlockMap();
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
 				for (let z = 0; z < 3; z++) {
-					if (x === 1 && y === 1 && z === 1) {
-						addAir(cube, x, y, z);
-					} else {
-						addBlock(cube, x, y, z);
-					}
+					if (x === 1 && y === 1 && z === 1) continue;
+					addBlock(cube, x, y, z);
 				}
 			}
 		}
@@ -94,20 +77,17 @@ describe('3bv test', () => {
 		addBomb(cube, 0, 0, 0);
 		addBomb(cube, 2, 2, 2);
 
-		const count = calculate3BV(cube);
+		const count = await calculate3BV(cube);
 		expect(count).toBe(1);
 	});
-	it('should equal two (3x3x3 without bomb two bombs opposite to each other but on same row)', () => {
-		const cube: Block[][][] = [];
+	it('should equal two (3x3x3 with two bombs opposite to each other but on same row)', async () => {
+		const cube: BlockMap = new BlockMap();
 		//Make a 3x3x3 cube with air in the middle
 		for (let x = 0; x < 3; x++) {
 			for (let y = 0; y < 3; y++) {
 				for (let z = 0; z < 3; z++) {
-					if (x === 1 && y === 1 && z === 1) {
-						addAir(cube, x, y, z);
-					} else {
-						addBlock(cube, x, y, z);
-					}
+					if (x === 1 && y === 1 && z === 1) continue;
+					addBlock(cube, x, y, z);
 				}
 			}
 		}
@@ -115,7 +95,7 @@ describe('3bv test', () => {
 		addBomb(cube, 0, 0, 0);
 		addBomb(cube, 2, 0, 0);
 
-		const count = calculate3BV(cube);
+		const count = await calculate3BV(cube);
 		expect(count).toBe(2);
 	});
 });

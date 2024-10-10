@@ -26,8 +26,8 @@
 	function isComplete() {
 		for(let entry of cube.cube){
 			const b = entry[1];
-			if(b.type === 'bomb' && !b.isSweeped) return false;
-			if(b.type === 'block' && b.isSweeped) return false;
+			if(b.type === 'bomb' && b.isSweeped) return false;
+			if(b.type === 'block' && !b.isSweeped) return false;
 		}
 		return true;
 	}
@@ -146,7 +146,6 @@
 		 *	- Current block is sweeped
 		 *	- The amount of flags adjactent is EQUAL to the amount of bombs adjactent
 		 */
-		//console.log('Chord on', pos);
 
 		if (block.type !== 'block') return;
 		if (!block.isSweeped) return;
@@ -217,7 +216,7 @@
 
 		if ($gameStore.startTime === null) {
 			//First click
-			cube = cube.populate(pos);
+			cube = await cube.populate(pos);
 
 			$gameStore.startTime = Date.now();
 			updateTime();
@@ -343,9 +342,6 @@
 					const finalX = x + deltaX;
 					const finalY = y + deltaY;
 					const finalZ = z + deltaZ;
-					if (finalX < 0 || finalX >= width) continue;
-					if (finalY < 0 || finalY >= height) continue;
-					if (finalZ < 0 || finalZ >= depth) continue;
 					const block = cube.getBlock(finalX, finalY, finalZ);
 					if (!block) continue;
 					if (block.type === 'bomb') continue;

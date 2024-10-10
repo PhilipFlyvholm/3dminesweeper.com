@@ -3,13 +3,19 @@ import { BlockMap, HashVector3, type Vector3 } from '$lib/Utils/BlockMap';
 import Srand from 'seeded-rand';
 import { Vector3 as TVector3 } from 'three';
 
+//Polyfill function
+async function IteratorToArray<T>(iterator: Iterable<T>) {
+	if(Array.fromAsync) return Array.fromAsync(iterator);
+	else return Array.from(iterator);
+}
+
 /*
 	Count3BV is a function that calculate the 3BV of a shape
 	3BV is the minimum number of clicks required to open all the cells
 	3BV is a measure of the difficulty of a shape
 	A shape is a map of blocks (BlockMap) where air blocks are ignored
 */
-export function calculate3BV(shape: BlockMap) {
+export async function calculate3BV(shape: BlockMap) {
 	let count = 0;
 	const marked: Set<string> = new Set();
 	const mark = (coord: Vector3) => {
@@ -37,6 +43,7 @@ export function calculate3BV(shape: BlockMap) {
 						if (isMarked(finalCoords)) continue;
 
 						mark(finalCoords);
+						
 						if (isEmpty(finalCoords)) {
 							localQueue.push(finalCoords);
 						}
@@ -45,12 +52,15 @@ export function calculate3BV(shape: BlockMap) {
 			}
 		}
 	};
-	const coords = shape.keys().toArray();
+	const coords = await IteratorToArray(shape.keys());
+	// First mark 0 0 2 then 2 0 0
 	for (const coord of coords) {
 		const block = shape.get(coord);
 		if (!block) continue;
 		if (block.type !== 'block') continue;
+		
 		if (!isMarked(coord) && isEmpty(coord)) {
+			
 			mark(coord);
 			count++;
 
@@ -59,8 +69,10 @@ export function calculate3BV(shape: BlockMap) {
 		}
 	}
 	for (const coord of coords) {
+		
 		const block = shape.get(coord);
 		if (!block) continue;
+		
 		if (isMarked(coord) || block.type === 'bomb') continue;
 		count++;
 	}
@@ -129,41 +141,52 @@ export function createPlainCube(width: number, height: number, depth: number): C
 
 export function createShapeTest(): CreationResult {
 	const shape: BlockMap = new BlockMap();
-	shape.set(
-		{ x: 0, y: 0, z: 0 },
-		{
-			x: 0,
-			y: 0,
-			z: 0,
+	const addBlock = (cube: BlockMap, x: number, y: number, z: number) => {
+		cube.set({x, y, z}, {
 			type: 'block',
+			x,
+			y,
+			z,
 			isFlagged: false,
 			isSweeped: false,
 			facing: 'up',
 			texture: 'block_default'
-		}
-	);
-	shape.set(
-		{ x: 0, y: 1, z: 0 },
-		{
-			x: 0,
-			y: 1,
-			z: 0,
-			type: 'block',
+		});
+	};
+	
+	const addBomb = (cube:BlockMap, x: number, y: number, z: number) => {
+		cube.set({x, y, z}, {
+			type: 'bomb',
+			x,
+			y,
+			z,
 			isFlagged: false,
 			isSweeped: false,
-			facing: 'left',
+			facing: 'up',
 			texture: 'block_default'
+		});
+	};
+	for (let x = 0; x < 3; x++) {
+		for (let y = 0; y < 3; y++) {
+			for (let z = 0; z < 3; z++) {
+				if (x === 1 && y === 1 && z === 1) continue;
+				addBlock(shape, x, y, z);
+			}
 		}
-	);
-	return { map: shape, size: { width: 1, height: 2, depth: 1, blockAmount: shape.size } };
+	}
+
+	addBomb(shape, 0, 0, 0);
+	addBomb(shape, 1, 0, 0);
+	return { map: shape, size: { width: 3, height: 3, depth: 3, blockAmount: shape.size } };
 }
 
 export function createPlainSphere(radius: number): CreationResult {
-	const center = { x: radius - 0.5, y: radius - 0.5, z: radius - 0.5 };
+	const offset = .5;
+	const center = { x: radius - offset, y: radius-offset, z: radius-offset};
 	const shape: BlockMap = new BlockMap();
 	const R2 = radius ** 2;
 	const epsilon = R2 - (radius - 0.5) ** 2;
-	const setBlock = (x: number, y: number, z: number) => {
+	const setBlock = ({x,y,z}:Vector3) => {
 		const facing = (() => {
 			// Get the direction this block is facing from the center using vectors
 			const vector = { x: x - center.x, y: y - center.y, z: z - center.z };
@@ -188,17 +211,22 @@ export function createPlainSphere(radius: number): CreationResult {
 		shape.set({ x: block.x, y: block.y, z: block.z }, block);
 	}
 
+	const innerAirBlocks = new Set<string>();
 	for(let x = -radius; x <= radius; x++) {
 		for(let y = -radius; y <= radius; y++) {
 			for(let z = -radius; z <= radius; z++) {
 				const distanceSquared = x**2 + y**2 + z**2;
+				const pos:Vector3 = {x: x + radius-offset, y: y + radius-offset, z: z + radius-offset}
 				if(R2 - epsilon <= distanceSquared && distanceSquared <= R2 + epsilon) {
-					setBlock(x + radius, y + radius, z + radius);
+					setBlock(pos);
+				}else if(distanceSquared <= R2 + epsilon){
+					const key = HashVector3(pos);
+					innerAirBlocks.add(key);
 				}
 			}
 		}
 	}
-	const outlineOnlyShape = excludeCore(shape, {x: radius, y: radius, z: radius });
+	const outlineOnlyShape = excludeCore(shape, innerAirBlocks);
 
 	return {
 		map: outlineOnlyShape,
@@ -206,31 +234,8 @@ export function createPlainSphere(radius: number): CreationResult {
 	};
 }
 
-function excludeCore(shape: BlockMap, center: Vector3){
+function excludeCore(shape: BlockMap, innerAirBlocks = new Set<string>()){
 	const newShape = new BlockMap()
-	const queue = [center];
-	const visited = new Set<string>();
-	const airBlocks = new Set<string>();
-	while(queue.length > 0){
-		const head = queue.pop();
-		if(!head) continue;
-		const {x, y, z}:Vector3 = head;
-		const key = HashVector3(head);
-		if(visited.has(key)) continue;
-		visited.add(key);
-
-		const block = shape.get(head);
-		if(!block){
-			airBlocks.add(key);
-			queue.push({x: x + 1, y, z});
-			queue.push({x: x - 1, y, z});
-			queue.push({x, y: y + 1, z});
-			queue.push({x, y: y - 1, z});
-			queue.push({x, y, z: z + 1});
-			queue.push({x, y, z: z - 1});
-		}
-	}
-	
 	for(const [coord, block] of shape.entries()){
 		const around = [{x:-1,y: 0,z: 0}, {x: 1, y: 0, z: 0}, {x: 0, y: -1, z: 0}, {x: 0, y: 1, z: 0}, {x: 0, y: 0, z: -1}, {x: 0, y: 0, z: 1}];
 		let isValid = false;
@@ -239,7 +244,7 @@ function excludeCore(shape: BlockMap, center: Vector3){
 			y += coord.y;
 			z += coord.z;
 			const key = HashVector3({x, y, z});
-			if(airBlocks.has(key)) continue;
+			if(innerAirBlocks.has(key)) continue;
 			const block = shape.get({x, y, z});
 			if(!block){
 				isValid = true;
@@ -257,7 +262,7 @@ function isOutline(x: number, y: number, z: number, width: number, height: numbe
 	return x === 0 || x === width - 1 || y === 0 || y === height - 1 || z === 0 || z === depth - 1;
 }
 
-export function addBombs(
+export async function addBombs(
 	initalShape: BlockMap,
 	firstClick: { x: number; y: number; z: number },
 	bombsAmount: number,
@@ -294,8 +299,9 @@ export function addBombs(
 			i--;
 		}
 	}
-	const difficulty = calculate3BV(shape);
-
+	const difficulty = await calculate3BV(shape);
+	console.log('Difficulty', difficulty);
+	
 	if (difficulty < bombsAmount + 3 && iteration < 50)
 		return addBombs(
 			initalShape,

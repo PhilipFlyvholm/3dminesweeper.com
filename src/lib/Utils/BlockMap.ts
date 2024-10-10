@@ -54,7 +54,7 @@ export class BlockMap implements Map<Vector3, Block> {
 		return this.map.has(hasedKey);
 	}
 
-	public keys(): MapIterator<Vector3> {
-		return this.map.keys().map(UnhashVector3);
+	public keys(): MapIterator<Vector3> {		
+		return Array.from(this.map.keys()).map(key => UnhashVector3(key))[Symbol.iterator]();
 	}
 }
