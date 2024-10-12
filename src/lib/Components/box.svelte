@@ -8,7 +8,7 @@
 	import { writable, type Writable } from 'svelte/store';
 	import type { Group } from 'three';
 	import { Instance } from '@threlte/extras';
-	import type { Block } from '$lib/Cube';
+	import type { Block } from '$lib/Shape';
 
 	export let block: Block;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;

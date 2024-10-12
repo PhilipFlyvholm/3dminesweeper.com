@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
-	import { Cube } from '$lib/Cube';
+	import { Cube, Shape } from '$lib/Shape';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { tutorialSeen } from '$lib/Stores/LocalStorage';
@@ -23,7 +23,7 @@
 	export let depth = 5;
 	let currentTool: 'shovel' | 'flag' = 'shovel';
 	let estimatedBombsRemaining = 0;
-	let cube: Cube;
+	let shape: Shape;
 	let timePlayed = 0;
 	let timeout: string | number | NodeJS.Timeout | undefined;
 	let mounted = false;
@@ -40,10 +40,10 @@
 		timePlayed = 0;
 		currentTool = 'shovel';
 
-		cube = new Cube(width, height, depth);
-		console.log('Initializing cube', width, height, depth, cube.cube.keys().toArray().length);
+		shape = new Cube(width, height, depth);
+		console.log('Initializing shape', width, height, depth, shape.shape.keys().toArray().length);
 
-		estimatedBombsRemaining = cube.bombs;
+		estimatedBombsRemaining = shape.bombs;
 		$gameStore = {
 			gameId: Math.random().toString(36).substring(7),
 			isGameOver: false,
@@ -51,10 +51,10 @@
 			startTime: null,
 			isGameWon: false,
 			clicks: 0,
-			threeBV: cube.difficulty || 0,
-			size: cube.size
+			threeBV: shape.difficulty || 0,
+			size: shape.size
 		};
-		destroyListener = cube.addDifficultyChangeListener((difficulty) => {
+		destroyListener = shape.addDifficultyChangeListener((difficulty) => {
 			$gameStore = { ...$gameStore, threeBV: difficulty };
 		});
 		$imageStore = { ...$imageStore, showcaseImages: [], gameOverImage: '' };
@@ -130,10 +130,10 @@
 					</div>
 				{/if}
 
-				{#if cube && cube.cube}
+				{#if shape && shape.shape}
 					<Canvas>
 						<DevOverlay />
-						<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
+						<GameScene {isMoving} bind:estimatedBombsRemaining shape={shape} {updateTime} {currentTool} />
 					</Canvas>
 				{/if}
 			{/key}

@@ -1,7 +1,7 @@
 import { imageStore } from '$lib/Stores/ImageStore';
 import { get } from 'svelte/store';
 
-export const takeImageOfCube = (final: boolean) => {
+export const takeImageOfShape = (final: boolean) => {
 	if (final) {
 		imageStore.update((store) => {
 			store.processesingGameOverImage = true;
@@ -94,12 +94,12 @@ export const createShareableImage = async (
 ): Promise<string> => {
 	return new Promise((resolve) => {
 		console.log('Creating image');
-		const cubeImage = get(imageStore).gameOverImage;
+		const shapeImage = get(imageStore).gameOverImage;
 		const canvas = document.createElement('canvas');
 		canvas.width = 1200;
 		canvas.height = 630;
 		const ctx = canvas.getContext('2d');
-		if (!ctx) return resolve(cubeImage);
+		if (!ctx) return resolve(shapeImage);
 		console.log('Found context');
 
 		addGradient(ctx, canvas.width, canvas.height, 'rgb(116, 74, 161)', 'rgb(21, 23, 31');
@@ -134,6 +134,6 @@ export const createShareableImage = async (
 			const dataUrl = canvas.toDataURL('image/png', 1.0);
 			resolve(dataUrl);
 		};
-		img.src = cubeImage;
+		img.src = shapeImage;
 	});
 };

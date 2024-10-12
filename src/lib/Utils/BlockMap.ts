@@ -1,4 +1,4 @@
-import type { Block } from '$lib/Cube';
+import type { Block } from '$lib/Shape';
 
 export type Vector3 = { x: number; y: number; z: number };
 

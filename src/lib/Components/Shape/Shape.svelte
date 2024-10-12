@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BlockToString, type Block } from '$lib/Cube';
+	import { BlockToString, type Block } from '$lib/Shape';
 	import { loadTexturesIfUnloaded } from '$lib/Textures';
 	import type { BoxLeftClick, BoxPointerDown, BoxRightClick } from '$lib/Types/BlockTypes';
 	import { T } from '@threlte/core';
@@ -7,7 +7,7 @@
 	import type { Writable } from 'svelte/store';
 	import type { Texture } from 'three';
 	import Box from '../box.svelte';
-	import CubeInstances from './ShapeInstances.svelte';
+	import ShapeInstances from './ShapeInstances.svelte';
 	import { BlockMap, type Vector3 } from '$lib/Utils/BlockMap';
 	export let shape: BlockMap = new BlockMap();
 	export let handleLeftClick: BoxLeftClick;
@@ -30,7 +30,7 @@
 	let time = 0;
 	beforeUpdate(() => (time = performance.now()));
 	afterUpdate(() =>
-		console.log('Rerendering cube: ' + counter++ + 'took ' + (performance.now() - time) + 'ms')
+		console.log('Rerendering shape: ' + counter++ + 'took ' + (performance.now() - time) + 'ms')
 	);
 </script>
 
@@ -58,7 +58,7 @@
 	{:then textures}
 		{#if textures && textures.size !== 0}
 			{#key shape.size}
-				<CubeInstances textures={convertMapToObjectArray(textures)}>
+				<ShapeInstances textures={convertMapToObjectArray(textures)}>
 					{#each shape as [coord, block]}
 						{@const randomFlagRotation = ((coord.x + coord.y + coord.z) / shape.size) * Math.PI * 2}
 						{#if $shapeInspectorStore.enableSplit == false || block.x > $shapeInspectorStore.splitAt}
@@ -70,7 +70,7 @@
 							/>
 						{/if}
 					{/each}
-				</CubeInstances>
+				</ShapeInstances>
 			{/key}
 		{/if}
 	{:catch error}

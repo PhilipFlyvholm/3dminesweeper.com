@@ -1,6 +1,6 @@
 <script lang="ts">
 	import InteractiveScene from '$lib/Components/InteractiveScene.svelte';
-	import type { Block, Cube as CubeType } from '$lib/Cube';
+	import type { Block, Shape as ShapeType} from '$lib/Shape';
 	import { submitScore } from '$lib/Leaderboard';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
@@ -8,23 +8,23 @@
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { OrbitControls, Stars } from '@threlte/extras';
 	import type { Writable } from 'svelte/store';
-	import Cube from './Shape/Shape.svelte';
+	import Shape from './Shape/Shape.svelte';
 	import { ScreenShake } from '$lib/Utils/Effects/ScreenShake';
 	import { Vector3 } from 'three';
 	import { getFaceFromPoint } from '$lib/Utils/FaceUtil';
-	import { takeImageOfCube } from '$lib/Utils/ImageUtil';
+	import { takeImageOfShape } from '$lib/Utils/ImageUtil';
 
 	export let updateTime: () => void = () => {};
 	export let currentTool: 'shovel' | 'flag';
 	export let estimatedBombsRemaining: number;
-	export let cube: CubeType;
+	export let shape: ShapeType;
 	const { renderStage, camera, renderer, scene } = useThrelte();
 
-	$: width = cube.getWidth();
-	$: height = cube.getHeight();
-	$: depth = cube.getDepth();
+	$: width = shape.getWidth();
+	$: height = shape.getHeight();
+	$: depth = shape.getDepth();
 	function isComplete() {
-		for (let entry of cube.cube) {
+		for (let entry of shape.shape) {
 			const b = entry[1];
 			if (b.type === 'bomb' && b.isSweeped) return false;
 			if (b.type === 'block' && !b.isSweeped) return false;
@@ -77,7 +77,7 @@
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
-					const block = cube.getBlock(x, y, z);
+					const block = shape.getBlock(x, y, z);
 					if (!block) continue;
 					if (block.type === 'bomb' && (!ignoreFlagged || !block.isFlagged)) bombs++;
 				}
@@ -90,7 +90,7 @@
 		for (let x = 0; x < width; x++) {
 			for (let y = 0; y < height; y++) {
 				for (let z = 0; z < depth; z++) {
-					const block = cube.getBlock(x, y, z);
+					const block = shape.getBlock(x, y, z);
 					if (!block) continue;
 					if (block.isSweeped) continue;
 					if (block.isFlagged) {
@@ -109,7 +109,7 @@
 				}
 			}
 		}
-		invalidateCube();
+		invalidateShape();
 	}
 
 	function gameOver() {
@@ -159,7 +159,7 @@
 					const finalX = pos.x + x;
 					const finalY = pos.y + y;
 					const finalZ = pos.z + z;
-					const localBlock = cube.getBlock(finalX, finalY, finalZ);
+					const localBlock = shape.getBlock(finalX, finalY, finalZ);
 					if (!localBlock) continue;
 					if (localBlock.type === 'bomb') {
 						bombs++;
@@ -177,14 +177,14 @@
 		$gameStore.clicks++;
 		for (const block of toUpdate) {
 			block.isSweeped = true;
-			cube.setBlock(block.x, block.y, block.z, block);
+			shape.setBlock(block.x, block.y, block.z, block);
 			updateTexture(block);
 			if (block.type === 'bomb' && !block.isFlagged) {
 				gameOver();
 			}
 			cascadeEmptyBlocks(block.x, block.y, block.z);
 		}
-		invalidateCube();
+		invalidateShape();
 		checkWin();
 	}
 
@@ -209,14 +209,14 @@
 		if (!isValidMouseMove(clientX, clientY)) return;
 		if (!$gameStore.isPlaying || $gameStore.isGameOver) return;
 
-		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		const block = shape.getBlock(pos.x, pos.y, pos.z);
 		console.log('Block', block);
 
 		if (!block) return;
 
 		if ($gameStore.startTime === null) {
 			//First click
-			cube = await cube.populate(pos);
+			shape = await shape.populate(pos);
 
 			$gameStore.startTime = Date.now();
 			updateTime();
@@ -242,10 +242,10 @@
 		block.isSweeped = true;
 		cascadeEmptyBlocks(pos.x, pos.y, pos.z);
 		checkWin();
-		cube.setBlock(pos.x, pos.y, pos.z, block);
+		shape.setBlock(pos.x, pos.y, pos.z, block);
 
 		updateTexture(block);
-		invalidateCube();
+		invalidateShape();
 		checkWin();
 	}
 
@@ -256,7 +256,7 @@
 		point: Vector3
 	) {
 		if (!isValidMouseMove(clientX, clientY)) return;
-		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		const block = shape.getBlock(pos.x, pos.y, pos.z);
 		if (!block) return;
 		if (block.isSweeped) return;
 		if (block.isFlagged) {
@@ -269,10 +269,10 @@
 			estimatedBombsRemaining--;
 		}
 		$gameStore.clicks++;
-		cube.setBlock(pos.x, pos.y, pos.z, block);
+		shape.setBlock(pos.x, pos.y, pos.z, block);
 
 		updateTexture(block);
-		invalidateCube();
+		invalidateShape();
 	}
 
 	let preReveal: { x: number; y: number; z: number }[] = [];
@@ -281,18 +281,18 @@
 		while (preReveal.length !== 0) {
 			const pos = preReveal.pop();
 			if (!pos) continue;
-			const block = cube.getBlock(pos.x, pos.y, pos.z);
+			const block = shape.getBlock(pos.x, pos.y, pos.z);
 			if (block) {
 				updateTexture(block);
-				cube = cube.setBlock(pos.x, pos.y, pos.z, block);
+				shape = shape.setBlock(pos.x, pos.y, pos.z, block);
 			}
 		}
-		invalidateCube();
+		invalidateShape();
 	}
 
 	async function handlePointerDown(pos: { x: number; y: number; z: number }) {
 		const tmpPreReveal: { x: number; y: number; z: number }[] = [];
-		const block = cube.getBlock(pos.x, pos.y, pos.z);
+		const block = shape.getBlock(pos.x, pos.y, pos.z);
 
 		if (!block) return;
 
@@ -319,7 +319,7 @@
 			tmpPreReveal.push(pos);
 		}
 		for (const pos of tmpPreReveal) {
-			const block = cube.getBlock(pos.x, pos.y, pos.z);
+			const block = shape.getBlock(pos.x, pos.y, pos.z);
 			if (!block) continue;
 			if (block.isSweeped) continue;
 			if (block.isFlagged) continue;
@@ -327,13 +327,13 @@
 			updateTexture(block);
 		}
 
-		invalidateCube();
+		invalidateShape();
 	}
 
 	function cascadeEmptyBlocks(x: number, y: number, z: number) {
 		let update: Block[] = [];
 
-		const bombsAround = getBombsAround(x, y, z, cube.cube);
+		const bombsAround = getBombsAround(x, y, z, shape.shape);
 		if (bombsAround !== 0) return;
 		for (let deltaX = -1; deltaX <= 1; deltaX++) {
 			for (let deltaY = -1; deltaY <= 1; deltaY++) {
@@ -342,7 +342,7 @@
 					const finalX = x + deltaX;
 					const finalY = y + deltaY;
 					const finalZ = z + deltaZ;
-					const block = cube.getBlock(finalX, finalY, finalZ);
+					const block = shape.getBlock(finalX, finalY, finalZ);
 					if (!block) continue;
 					if (block.type === 'bomb') continue;
 					if (block.isSweeped) continue;
@@ -357,7 +357,7 @@
 		update.forEach((block) => {
 			cascadeEmptyBlocks(block.x, block.y, block.z);
 		});
-		invalidateCube();
+		invalidateShape();
 	}
 
 	function getTextureForBlock(block: Block) {
@@ -366,7 +366,7 @@
 		const { x, y, z } = block;
 		if (block.isSweeped) {
 			if (block.type === 'bomb') return 'block_bomb_exploded';
-			const bombsAround = getBombsAround(x, y, z, cube.cube);
+			const bombsAround = getBombsAround(x, y, z, shape.shape);
 
 			if (bombsAround === 0 || bombsAround > 8) {
 				return 'block_open_air';
@@ -385,11 +385,11 @@
 		const newTexture = getTextureForBlock(block);
 		if (!newTexture) return;
 		block.texture = newTexture;
-		cube.setBlock(block.x, block.y, block.z, block);
+		shape.setBlock(block.x, block.y, block.z, block);
 	}
 
-	function invalidateCube() {
-		cube = cube;
+	function invalidateShape() {
+		shape = shape;
 		//invalidate();
 	}
 
@@ -429,13 +429,13 @@
 			renderer.render(scene, camera.current);
 			if ($gameStore && $gameStore.isGameOver && $imageStore.gameOverImage === '') {
 				if ($imageStore.processesingGameOverImage) return;
-				takeImageOfCube(true);
+				takeImageOfShape(true);
 				if (!screenShake.isActive() && !$gameStore.isGameWon)
 					screenShake.shake(camera.current, new Vector3(-0.5, 0, 0.5), 250);
 			} else if ($gameStore && !$gameStore.isGameOver && $imageStore.showcaseMode) {
 				if (Date.now() - lastImageTime > 1000) {
 					console.log('Taking image');
-					takeImageOfCube(false);
+					takeImageOfShape(false);
 					lastImageTime = Date.now();
 				}
 			}
@@ -470,8 +470,8 @@
 	<T.DirectionalLight castShadow position={[3, 10, 10]} />
 	<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
 	<T.AmbientLight intensity={0.2} />
-	<Cube
-		bind:shape={cube.cube}
+	<Shape
+		bind:shape={shape.shape}
 		{handleLeftClick}
 		{handleRightClick}
 		{handlePointerDown}

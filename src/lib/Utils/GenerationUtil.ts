@@ -1,4 +1,4 @@
-import type { Block } from '$lib/Cube';
+import type { Block } from '$lib/Shape';
 import { BlockMap, HashVector3, type Vector3 } from '$lib/Utils/BlockMap';
 import Srand from 'seeded-rand';
 import { Vector3 as TVector3 } from 'three';
@@ -38,7 +38,7 @@ export async function calculate3BV(shape: BlockMap) {
 						const finalY = y + deltaY;
 						const finalZ = z + deltaZ;
 						const finalCoords = { x: finalX, y: finalY, z: finalZ };
-						if (!shape.has(finalCoords)) continue; //If it is not in the cube
+						if (!shape.has(finalCoords)) continue; //If it is not in the shape
 
 						if (isMarked(finalCoords)) continue;
 
@@ -139,8 +139,8 @@ export function createPlainCube(width: number, height: number, depth: number): C
 
 export function createShapeTest(): CreationResult {
 	const shape: BlockMap = new BlockMap();
-	const addBlock = (cube: BlockMap, x: number, y: number, z: number) => {
-		cube.set(
+	const addBlock = (shape: BlockMap, x: number, y: number, z: number) => {
+		shape.set(
 			{ x, y, z },
 			{
 				type: 'block',
@@ -155,8 +155,8 @@ export function createShapeTest(): CreationResult {
 		);
 	};
 
-	const addBomb = (cube: BlockMap, x: number, y: number, z: number) => {
-		cube.set(
+	const addBomb = (shape: BlockMap, x: number, y: number, z: number) => {
+		shape.set(
 			{ x, y, z },
 			{
 				type: 'bomb',
@@ -293,9 +293,9 @@ export async function addBombs(
 	let estimatedBombsRemaining = 0;
 
 	const possiblePositions = shape.keys().toArray();
-	if (possiblePositions.length === 0) throw new Error('Cube is empty');
+	if (possiblePositions.length === 0) throw new Error('Shape is empty');
 	if (possiblePositions.length <= bombsAmount)
-		throw new Error('Cube is too small for the amount of bombs');
+		throw new Error('Shape is too small for the amount of bombs');
 	for (let i = 0; i < bombsAmount; i++) {
 		let coord = possiblePositions.at(Math.floor(seededRandom.random() * possiblePositions.length));
 		let block = coord ? shape.get(coord) : undefined;
@@ -329,5 +329,5 @@ export async function addBombs(
 			seed !== undefined ? seed + 1 : undefined,
 			iteration + 1
 		);
-	return { cube: shape, difficulty, estimatedBombsRemaining, seed: seededRandom.seed };
+	return { shape: shape, difficulty, estimatedBombsRemaining, seed: seededRandom.seed };
 }
