@@ -7,10 +7,10 @@
 	 */
 	import { interactivity } from '@threlte/extras';
 	interactivity({
-		filter: (hits, state) => {
+		filter: (hits, _state) => {
 			// Only return the first hit
 			if ($shapeInspectorStore.interactivityDebug) {
-				console.log(hits, state);
+				console.log(hits.slice(0, 1));
 			}
 
 			return hits.slice(0, 1);

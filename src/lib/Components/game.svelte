@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
-	import { Cube, Shape } from '$lib/Shape';
+	import { Cube, Shape, Sphere } from '$lib/Shape';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { tutorialSeen } from '$lib/Stores/LocalStorage';
@@ -39,8 +39,10 @@
 	function init() {
 		timePlayed = 0;
 		currentTool = 'shovel';
-
-		shape = new Cube(width, height, depth);
+		const urlParams = new URLSearchParams(window.location.search);
+		const sphereParam = urlParams.get('sphere');
+		const isSphere = sphereParam !== null && sphereParam.toLowerCase() === 'true';
+		shape = isSphere ? new Sphere(width) : new Cube(width, height, depth);
 		console.log('Initializing shape', width, height, depth, shape.shape.keys().toArray().length);
 
 		estimatedBombsRemaining = shape.bombs;

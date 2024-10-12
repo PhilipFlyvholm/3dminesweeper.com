@@ -3,6 +3,7 @@ import type { BlockMap } from '$lib/Utils/BlockMap';
 import {
 	addBombs,
 	createPlainCube,
+	createPlainSphere,
 	type CreationResult
 } from './Utils/GenerationUtil';
 
@@ -52,17 +53,10 @@ export abstract class Shape {
 	}
 
 	getBlock(x: number, y: number, z: number) {
-		if (x < 0 || x > this.size.width) return undefined;
-		if (y < 0 || y > this.size.height) return undefined;
-		if (z < 0 || z > this.size.depth) return undefined;
-
 		return this.shape.get({ x, y, z });
 	}
 
 	setBlock(x: number, y: number, z: number, block: Block) {
-		if (x < 0 || x > this.size.width) return this;
-		if (y < 0 || y > this.size.height) return this;
-		if (z < 0 || z > this.size.depth) return this;
 		this.shape.set({ x, y, z }, block);
 		this.shape = this.shape;
 		return this;
@@ -93,6 +87,13 @@ export abstract class Shape {
 export class Cube extends Shape{
 	constructor(width: number, height: number, depth: number) {
 		const shapeCreationResult: CreationResult = createPlainCube(width, height, depth);
+		super(shapeCreationResult)
+	}
+}
+
+export class Sphere extends Shape{
+	constructor(radius: number) {
+		const shapeCreationResult: CreationResult = createPlainSphere(radius);
 		super(shapeCreationResult)
 	}
 }
