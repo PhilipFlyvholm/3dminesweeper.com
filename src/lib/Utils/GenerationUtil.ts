@@ -288,11 +288,11 @@ export async function addBombs(
 	seed?: number,
 	iteration = 0
 ) {
-	const shape = new BlockMap(initalShape.entries().toArray());
+	const shape = new BlockMap(Array.from(initalShape.entries()));
 	const seededRandom = new Srand(seed);
 	let estimatedBombsRemaining = 0;
 
-	const possiblePositions = shape.keys().toArray();
+	const possiblePositions = Array.from(shape.keys());
 	if (possiblePositions.length === 0) throw new Error('Shape is empty');
 	if (possiblePositions.length <= bombsAmount)
 		throw new Error('Shape is too small for the amount of bombs');

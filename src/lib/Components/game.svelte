@@ -43,7 +43,7 @@
 		const sphereParam = urlParams.get('sphere');
 		const isSphere = sphereParam !== null && sphereParam.toLowerCase() === 'true';
 		shape = isSphere ? new Sphere(width) : new Cube(width, height, depth);
-		console.log('Initializing shape', width, height, depth, shape.shape.keys().toArray().length);
+		console.log('Initializing shape', width, height, depth, Array.from(shape.shape.keys()).length);
 
 		estimatedBombsRemaining = shape.bombs;
 		$gameStore = {
