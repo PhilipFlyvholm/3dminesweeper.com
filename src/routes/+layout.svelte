@@ -31,15 +31,16 @@
 </AppShell>
 
 <style>
-	:global(h1, .vt323) {
-		font-family: 'VT323', 'Alegreya Sans', sans-serif;
+	:global(h1){
 		text-shadow:
 			2px 2px 0px #744aa1,
 			3px 3px 0px #744aa1;
 	}
+	:global(h1,h2,h3, .vt323) {
+		font-family: 'VT323', 'Alegreya Sans', sans-serif;
+	}
 
 	:global(h2, h3) {
-		font-weight: bold;
 		margin: 1rem 0 0.25rem 0;
 	}
 	:global(strong) {
