@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GameOver from '$lib/Components/overlays/GameOver.svelte';
 	import Toolpicker from '$lib/Components/overlays/Toolpicker.svelte';
-	import { Cube } from '$lib/Cube';
+	import { Cube, Shape, Sphere } from '$lib/Shape';
 	import { gameStore, mouse } from '$lib/Stores/GameStore';
 	import { imageStore } from '$lib/Stores/ImageStore';
 	import { tutorialSeen } from '$lib/Stores/LocalStorage';
@@ -16,12 +16,14 @@
 	import Loading from './Loading.svelte';
 	import DataOverlay from './overlays/DataOverlay.svelte';
 	import TutorialOverlay from './overlays/TutorialOverlay.svelte';
+	import ShapeInspectorOverlay from './overlays/dev/ShapeInspectorOverlay.svelte';
+	import DevOverlay from './overlays/dev/DevOverlay.svelte';
 	export let width = 5;
 	export let height = 5;
 	export let depth = 5;
 	let currentTool: 'shovel' | 'flag' = 'shovel';
 	let estimatedBombsRemaining = 0;
-	let cube: Cube;
+	let shape: Shape;
 	let timePlayed = 0;
 	let timeout: string | number | NodeJS.Timeout | undefined;
 	let mounted = false;
@@ -37,11 +39,13 @@
 	function init() {
 		timePlayed = 0;
 		currentTool = 'shovel';
+		const urlParams = new URLSearchParams(window.location.search);
+		const sphereParam = urlParams.get('sphere');
+		const isSphere = sphereParam !== null && sphereParam.toLowerCase() === 'true';
+		shape = isSphere ? new Sphere(width) : new Cube(width, height, depth);
+		console.log('Initializing shape', width, height, depth, shape.shape.keys().toArray().length);
 
-		cube = new Cube(width, height, depth);
-		console.log('Initializing cube', width, height, depth, cube.cube.length);
-
-		estimatedBombsRemaining = cube.bombs;
+		estimatedBombsRemaining = shape.bombs;
 		$gameStore = {
 			gameId: Math.random().toString(36).substring(7),
 			isGameOver: false,
@@ -49,10 +53,10 @@
 			startTime: null,
 			isGameWon: false,
 			clicks: 0,
-			threeBV: cube.difficulty || 0,
-			size: cube.size
+			threeBV: shape.difficulty || 0,
+			size: shape.size
 		};
-		destroyListener = cube.addDifficultyChangeListener((difficulty) => {
+		destroyListener = shape.addDifficultyChangeListener((difficulty) => {
 			$gameStore = { ...$gameStore, threeBV: difficulty };
 		});
 		$imageStore = { ...$imageStore, showcaseImages: [], gameOverImage: '' };
@@ -128,9 +132,10 @@
 					</div>
 				{/if}
 
-				{#if cube && cube.cube}
+				{#if shape && shape.shape}
 					<Canvas>
-						<GameScene {isMoving} bind:estimatedBombsRemaining {cube} {updateTime} {currentTool} />
+						<DevOverlay />
+						<GameScene {isMoving} bind:estimatedBombsRemaining shape={shape} {updateTime} {currentTool} />
 					</Canvas>
 				{/if}
 			{/key}
@@ -161,6 +166,7 @@
 		>
 		{new Date(timePlayed).toISOString().substring(11, 19)}
 	</DataOverlay>
+	<ShapeInspectorOverlay />
 	<GameOver restart={() => init()} {isMoving} />
 	{#if mounted && $tutorialSeen === 'false'}
 		<TutorialOverlay />

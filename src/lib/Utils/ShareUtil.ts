@@ -1,8 +1,8 @@
 import { gameStore } from '$lib/Stores/GameStore';
 import type { DrawerStore } from '@skeletonlabs/skeleton';
 
-import { get } from 'svelte/store';
 import { share as skeletonShare, type Share } from 'skeleton-share';
+import { get } from 'svelte/store';
 
 function dataURLtoFile(dataurl: string, filename: string) {
 	const arr = dataurl.split(',');
@@ -32,7 +32,13 @@ export function share(prettyDate: string, drawerStore: DrawerStore, shareableIma
 
 	const title = '3D Minesweeper';
 	const url = 'https://3dminesweeper.com';
-	const data: Share = { title, url, text: message, clipboardText: message + ` Try to beat me at ${url}`, files: file ? [file] : undefined };
+	const data: Share = {
+		title,
+		url,
+		text: message,
+		clipboardText: message + ` Try to beat me at ${url}`,
+		files: file ? [file] : undefined
+	};
 	skeletonShare(data, drawerStore, {}, true).then((shareType) => {
 		if (shareType === 'UI') {
 			console.log('Sharing (directly) via UI');

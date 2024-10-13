@@ -1,9 +1,6 @@
 <svelte:head>
 	<title>How do you play 3D Minesweeper?</title>
-	<meta
-		name="description"
-		content=""
-	/>
+	<meta name="description" content="" />
 </svelte:head>
 <header>
 	<h1 class="h2 vt323 text-center">How do I play 3D Minesweeper?</h1>
@@ -11,7 +8,8 @@
 
 <article>
 	<p class="md:text-center">
-		Is it easy to play 3D Minesweeper? Yeah with this guide will you be walked through the rules and gameplay of 3D Minesweeper.
+		Is it easy to play 3D Minesweeper? Yeah with this guide will you be walked through the rules and
+		gameplay of 3D Minesweeper.
 	</p>
 
 	<h3 class="h3">Objective</h3>

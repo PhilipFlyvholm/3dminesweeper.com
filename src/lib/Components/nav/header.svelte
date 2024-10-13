@@ -13,5 +13,5 @@
 			class="h-[2rem]"
 		/>3DMinesweeper.com</a
 	>
-	<DropdownMenu slot="trail"/>
+	<DropdownMenu slot="trail" />
 </AppBar>

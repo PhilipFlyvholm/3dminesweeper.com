@@ -8,9 +8,9 @@
 	import { writable, type Writable } from 'svelte/store';
 	import type { Group } from 'three';
 	import { Instance } from '@threlte/extras';
-	import type { NonAirBlock } from '$lib/Cube';
+	import type { Block } from '$lib/Shape';
 
-	export let block: NonAirBlock;
+	export let block: Block;
 	export let isMoving: Writable<'click' | 'drag' | 'none'>;
 	export let isFlagged: boolean;
 	export let randomFlagRotation = 0;

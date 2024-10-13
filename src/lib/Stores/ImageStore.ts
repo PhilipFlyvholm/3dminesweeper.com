@@ -10,6 +10,5 @@ export const imageStore = writable<ImageStore>({
 	showcaseMode: false,
 	gameOverImage: '',
 	showcaseImages: [],
-	processesingGameOverImage: false,
+	processesingGameOverImage: false
 });
-
